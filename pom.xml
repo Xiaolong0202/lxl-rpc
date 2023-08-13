@@ -12,8 +12,8 @@
         <module>demo</module>
         <module>lxl-rpc-framework</module>
         <module>lxl-rpc-manager</module>
-        <module>demo/lxl-rpc-server-demo</module>
-        <module>demo/lxl-rpc-client-demo</module>
+        <module>demo/lxl-rpc-provider-demo</module>
+        <module>demo/lxl-rpc-consumer-demo</module>
         <module>demo/lxl-rpc-api</module>
     </modules>
 
@@ -29,16 +29,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.13.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.28</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.12</version>
         </dependency>
     </dependencies>
 <!--做父工程的版本管理-->
@@ -66,7 +56,16 @@
                 <artifactId>fastjson2</artifactId>
                 <version>2.0.37</version>
             </dependency>
-
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.2.12</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.28</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
