@@ -8,17 +8,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class LxlRpcBootStrap {
 
     Logger log = LoggerFactory.getLogger(LxlRpcBootStrap.class);
+
+
+    public static Map<String,ServiceConfig> serviceAndImplMap = new ConcurrentHashMap<>(256);
     private String applicationName = "lxlRPC-default-application";
     private RegistryConfig registryConfig;
     private ServiceConfig serviceConfig;
     private ProtocolConfig protocolConfig;
-        //TODO 待处理
+
     private Registry registry;
     private int port = 8088;
 
@@ -83,6 +87,7 @@ public class LxlRpcBootStrap {
     public LxlRpcBootStrap publish(ServiceConfig<?> service) {
         //使用了抽象注册中心的概念
         registry.register(service);
+        serviceAndImplMap.put(service.getInterface().getName(),service);
         return this;
     }
 
