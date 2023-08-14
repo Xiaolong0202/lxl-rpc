@@ -1,9 +1,12 @@
 package com.lxl;
 
+import com.lxl.utils.zookeeper.ZookeeperNode;
+import com.lxl.utils.zookeeper.ZookeeperUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 
@@ -12,39 +15,23 @@ import java.util.concurrent.CountDownLatch;
 public class Application {
     public static void main(String[] args) {
 
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-
-
         String connectString = "39.107.52.125:2181";
         int timeout = Constant.DEFAULT_ZK_TIME_OUT;
         //创建基本的目录
 
-            try (ZooKeeper zooKeeper = new ZooKeeper(connectString, timeout, event -> {
-                if (event.getState() == Watcher.Event.KeeperState.SyncConnected) {
-                    log.debug("客户端连接成功");
-                    countDownLatch.countDown();
-                }
-            })) {
-                countDownLatch.await();
+            try (ZooKeeper zooKeeper = ZookeeperUtil.createZookeeper(connectString,timeout)) {
                 //定义节点和数据
                 String basePath = "/lxlRpc-metadata";
                 String providerPath = basePath + "/provider";
-                String consumerPath = basePath + "/consumer";
-                //先要判断是否存在,再决定是否创建节点
-                if (zooKeeper.exists(basePath,null) == null){
-                   String res =  zooKeeper.create(basePath, "basePath".getBytes("UTF-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-                   log.info("节点【{}】,已经创建成功",res);
-                }
-                if (zooKeeper.exists(providerPath,null)==null){
-                    String res =  zooKeeper.create(providerPath, "provider".getBytes("UTF-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-                    log.info("节点【{}】,已经创建成功",res);
-                }
-                if (zooKeeper.exists(consumerPath,null) == null){
-                    String res =  zooKeeper.create(consumerPath, consumerPath.getBytes("UTF-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//节点对所有人都开放
-                    log.info("节点【{}】,已经创建成功",res);
-                }
-            } catch (IOException | InterruptedException | KeeperException e) {
-                log.error("产生了异常如下:",e);
+                String  consumerPath = basePath + "/consumer";
+                ZookeeperNode baseNode = new ZookeeperNode(basePath,"basePath".getBytes("UTF-8"));
+                ZookeeperNode providerNode = new ZookeeperNode(providerPath, "provider".getBytes("UTF-8"));
+                ZookeeperNode consumerNode= new ZookeeperNode(consumerPath,"consumerPath".getBytes("UTF-8"));
+                List.of(baseNode,providerNode,consumerNode).forEach(node->{
+                    ZookeeperUtil.createZookeeperNode(zooKeeper,node,null,CreateMode.PERSISTENT);
+                   });
+            } catch (IOException | InterruptedException  e) {
+                log.error("创建结点的时候产生了异常如下:",e);
             throw new RuntimeException(e);
         }
     }
