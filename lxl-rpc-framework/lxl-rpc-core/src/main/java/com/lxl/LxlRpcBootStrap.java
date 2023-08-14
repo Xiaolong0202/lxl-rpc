@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 
 
 public class LxlRpcBootStrap {
@@ -45,7 +47,7 @@ public class LxlRpcBootStrap {
      * @return
      */
     public LxlRpcBootStrap application(String appName) {
-        this.applicationName =appName;
+        this.applicationName = appName;
         return this;
     }
 
@@ -106,11 +108,9 @@ public class LxlRpcBootStrap {
      * 启动Netty服务
      */
     public void start(){
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+         while (true){
+
+         }
     }
 
 
@@ -128,6 +128,7 @@ public class LxlRpcBootStrap {
      */
     public LxlRpcBootStrap reference(ReferenceConfig<?> referenceConfig) {
         //在这个方法当中获取对应的配置项，用来配置reference,将来使用get方法的时候就可以获取代理对象
+        referenceConfig.setRegistryConfig(registryConfig);
         return this;
     }
 }

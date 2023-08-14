@@ -8,7 +8,11 @@ import com.lxl.utils.zookeeper.ZookeeperNode;
 import com.lxl.utils.zookeeper.ZookeeperUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
+
+import java.net.InetSocketAddress;
+import java.util.List;
 
 
 @Slf4j
@@ -36,5 +40,18 @@ public class ZookeeperRegistry extends AbstractRegistry {
         //TODO  后续处理端口的问题
         String node = parentNode+'/'+ipAddr+':'+8088;
         ZookeeperUtil.createZookeeperNode(zooKeeper,new ZookeeperNode(node,null),null,CreateMode.EPHEMERAL);//创建一个临时的结点
+    }
+
+    @Override
+    public InetSocketAddress lookup(String serviceName) {
+        //找到对应的结点
+        String serviceNode = Constant.BASE_PROVIDER+'/'+serviceName;
+
+        List<String> children = ZookeeperUtil.getChildren(zooKeeper,serviceNode,null);
+        //从zk中获取它的子节点
+        children.forEach(child->{
+            System.out.println("child = " + child);
+        });
+        return null;
     }
 }

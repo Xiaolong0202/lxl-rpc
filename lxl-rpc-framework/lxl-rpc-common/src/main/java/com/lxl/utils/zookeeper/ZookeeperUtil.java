@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 
@@ -30,7 +31,6 @@ public class ZookeeperUtil {
     public static ZooKeeper createZookeeper(String connectString,int timeout){
         CountDownLatch countDownLatch = new CountDownLatch(1);
         ZooKeeper zooKeeper;
-        System.out.println(connectString+"sadsaadsadsdsasadsda");
         try {
             zooKeeper  = new ZooKeeper(connectString, timeout, event -> {
                 if (event.getState() == Watcher.Event.KeeperState.SyncConnected) {
@@ -80,5 +80,15 @@ public class ZookeeperUtil {
             log.error("关闭zookeeper的时候发生了异常");
             throw new ZookeeperException();
         }
+    }
+
+    public static List<String> getChildren(ZooKeeper zooKeeper,String serviceNode, Watcher watcher) {
+        List<String> children;
+        try {
+            children = zooKeeper.getChildren(serviceNode, null);
+        } catch (KeeperException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return children;
     }
 }
