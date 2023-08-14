@@ -1,6 +1,10 @@
 package com.lxl;
 
+import com.lxl.discovery.RegistryConfig;
 import com.lxl.impl.GreetingsServiceImpl;
+
+import java.sql.Time;
+import java.util.concurrent.TimeUnit;
 
 public class Application {
     public static void main(String[] args) {
@@ -19,5 +23,10 @@ public class Application {
                 .protocol(new ProtocolConfig("jdk"))
                 .publish(service)
                 .start();//发布服务;
+//        try {
+//            TimeUnit.SECONDS.sleep(20);
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 }

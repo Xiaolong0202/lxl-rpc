@@ -1,5 +1,7 @@
 package com.lxl;
 
+import com.lxl.discovery.RegistryConfig;
+
 public class Application {
     public static void main(String[] args) {
         //想尽一切办法获取代理对象,使用对象对其进行封装

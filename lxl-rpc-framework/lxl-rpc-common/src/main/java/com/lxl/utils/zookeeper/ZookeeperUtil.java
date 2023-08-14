@@ -30,6 +30,7 @@ public class ZookeeperUtil {
     public static ZooKeeper createZookeeper(String connectString,int timeout){
         CountDownLatch countDownLatch = new CountDownLatch(1);
         ZooKeeper zooKeeper;
+        System.out.println(connectString+"sadsaadsadsdsasadsda");
         try {
             zooKeeper  = new ZooKeeper(connectString, timeout, event -> {
                 if (event.getState() == Watcher.Event.KeeperState.SyncConnected) {

@@ -1,13 +1,28 @@
 package com.lxl;
 
+import com.lxl.discovery.Registry;
+import com.lxl.discovery.RegistryConfig;
+import com.lxl.discovery.impl.ZookeeperRegistry;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.lang.module.ResolvedModule;
 import java.util.List;
 
 
-@Slf4j
+
 public class LxlRpcBootStrap {
+
+    Logger log = LoggerFactory.getLogger(LxlRpcBootStrap.class);
+    private String applicationName = "lxlRPC-default-application";
+    private RegistryConfig registryConfig;
+    private ServiceConfig serviceConfig;
+    private ProtocolConfig protocolConfig;
+        //TODO 待处理
+    private Registry registry;
+    private int port = 8088;
+
+
     //是一个单例类
 
     private LxlRpcBootStrap(){
@@ -26,15 +41,18 @@ public class LxlRpcBootStrap {
      * @return
      */
     public LxlRpcBootStrap application(String appName) {
+        this.applicationName =appName;
         return this;
     }
 
     /**
-     * 用于配置注册中心
+     * 用于配置注册中心,会根据url路径来返回相应的注册中心
      * @param registryConfig
      * @return
      */
     public LxlRpcBootStrap registry(RegistryConfig registryConfig) {
+        this.registryConfig = registryConfig;
+        this.registry = registryConfig.getRegistry();
         return this;
     }
 
@@ -44,6 +62,7 @@ public class LxlRpcBootStrap {
      * @return
      */
     public LxlRpcBootStrap protocol(ProtocolConfig protocalConfig) {
+        this.protocolConfig = protocalConfig;
         if (log.isDebugEnabled()){
             log.debug("当前工程使用了:{}协议进行序列化",protocalConfig.toString());
         }
@@ -57,14 +76,13 @@ public class LxlRpcBootStrap {
 
 
     /**
-     * 发布服务,将接口实现并注册到服务中心
+     * 发布服务,将接口服务发布到注册中心当中
      * @param service
      * @return
      */
     public LxlRpcBootStrap publish(ServiceConfig<?> service) {
-        if (log.isDebugEnabled()){
-            log.debug("服务{},已经被注册",service.getInterface().getName());
-        }
+        //使用了抽象注册中心的概念
+        registry.register(service);
         return this;
     }
 
@@ -74,7 +92,7 @@ public class LxlRpcBootStrap {
      * @return
      */
     public LxlRpcBootStrap publish(List<ServiceConfig> services) {
-
+        services.forEach(this::publish);
         return this;
     }
 
@@ -83,7 +101,11 @@ public class LxlRpcBootStrap {
      * 启动Netty服务
      */
     public void start(){
-
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
