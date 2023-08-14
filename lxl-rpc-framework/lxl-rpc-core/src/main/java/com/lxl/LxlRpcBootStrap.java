@@ -21,7 +21,7 @@ public class LxlRpcBootStrap {
 
     public static Map<String,ServiceConfig> serviceAndImplMap = new ConcurrentHashMap<>(256);
     private String applicationName = "lxlRPC-default-application";
-    private RegistryConfig registryConfig;
+//    private RegistryConfig registryConfig;
     private ServiceConfig serviceConfig;
     private ProtocolConfig protocolConfig;
 
@@ -57,7 +57,6 @@ public class LxlRpcBootStrap {
      * @return
      */
     public LxlRpcBootStrap registry(RegistryConfig registryConfig) {
-        this.registryConfig = registryConfig;
         this.registry = registryConfig.getRegistry();
         return this;
     }
@@ -128,7 +127,7 @@ public class LxlRpcBootStrap {
      */
     public LxlRpcBootStrap reference(ReferenceConfig<?> referenceConfig) {
         //在这个方法当中获取对应的配置项，用来配置reference,将来使用get方法的时候就可以获取代理对象
-        referenceConfig.setRegistryConfig(registryConfig);
+        referenceConfig.setRegistry(registry);
         return this;
     }
 }

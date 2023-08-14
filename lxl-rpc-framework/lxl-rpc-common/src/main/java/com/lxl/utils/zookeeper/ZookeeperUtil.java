@@ -87,6 +87,7 @@ public class ZookeeperUtil {
         try {
             children = zooKeeper.getChildren(serviceNode, null);
         } catch (KeeperException | InterruptedException e) {
+            log.error("获取结点【{}】的子节点时发生异常",serviceNode);
             throw new RuntimeException(e);
         }
         return children;

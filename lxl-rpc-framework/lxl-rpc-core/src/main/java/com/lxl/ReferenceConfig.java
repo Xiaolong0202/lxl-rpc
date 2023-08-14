@@ -1,5 +1,6 @@
 package com.lxl;
 
+import com.lxl.discovery.Registry;
 import com.lxl.discovery.RegistryConfig;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,14 +14,14 @@ import java.net.InetSocketAddress;
 public class ReferenceConfig <T>{
     private Class<T> interfaceRef;
 
-    private RegistryConfig registryConfig;
+    private Registry registry;
 
-    public RegistryConfig getRegistryConfig() {
-        return registryConfig;
+    public Registry getRegistry() {
+        return registry;
     }
 
-    public void setRegistryConfig(RegistryConfig registryConfig) {
-        this.registryConfig = registryConfig;
+    public void setRegistry(Registry registry) {
+        this.registry = registry;
     }
 
     public Class<T> getInterface() {
@@ -41,7 +42,10 @@ public class ReferenceConfig <T>{
                 System.out.println("args = " + args);
                 System.out.println("hello proxy");
                 //从注册中心找一个可用的服务
-                InetSocketAddress inetSocketAddress = registryConfig.getRegistry(). lookup(interfaceRef.getName());
+                InetSocketAddress inetSocketAddress = registry.lookup(interfaceRef.getName());
+                if (log.isDebugEnabled()){
+                    log.debug("服务调用方，返回了服务【{}】的可用主机【{}】",interfaceRef.getName(),inetSocketAddress.getHostString());
+                }
                 //使用netty连接服务器 发送服务的名字+方法的名字+参数列表,得到结果
                 return null;
             }
