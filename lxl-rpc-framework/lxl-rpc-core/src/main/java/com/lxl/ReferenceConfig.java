@@ -1,25 +1,17 @@
 package com.lxl;
 
 import com.lxl.discovery.Registry;
-import com.lxl.discovery.RegistryConfig;
 import com.lxl.exceptions.NetWorkException;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
@@ -69,7 +61,7 @@ public class ReferenceConfig <T>{
                     //连接服务器
                     CompletableFuture<Channel> channelCompletableFuture = new CompletableFuture();
                     //使用异步的方式获取
-                    NettyBootStrapInitializer.getBootstrap().connect(inetSocketAddress).addListener(new ChannelFutureListener() {
+                    NettyClientBootStrapInitializer.getBootstrap().connect(inetSocketAddress).addListener(new ChannelFutureListener() {
                         @Override
                         public void operationComplete(ChannelFuture future) throws Exception {
                             if (future.isSuccess()){
@@ -87,7 +79,7 @@ public class ReferenceConfig <T>{
                 if (channel==null)throw new NetWorkException("Netty获取channel对象实例失败");
 
                 CompletableFuture<Object> objectCompletableFuture = new CompletableFuture<>();
-                ChannelFuture channelFuture = channel.writeAndFlush(Unpooled.wrappedBuffer("我是客户端，我是用的缓存获取的channel".getBytes(StandardCharsets.UTF_8)));
+                ChannelFuture channelFuture = channel.writeAndFlush(Unpooled.wrappedBuffer("我是客户端，".getBytes(StandardCharsets.UTF_8)));
                 //添加监听器
                 channelFuture.addListener((ChannelFutureListener) future -> {
                     if (!future.isSuccess()){
@@ -96,7 +88,8 @@ public class ReferenceConfig <T>{
                     }
                 });
 
-                return objectCompletableFuture.get(3, TimeUnit.SECONDS);
+//                return objectCompletableFuture.get(3, TimeUnit.SECONDS);
+                return null;
             }
         });
         return (T) helloProxy;

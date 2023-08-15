@@ -12,7 +12,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.nio.charset.StandardCharsets;
 
-public class NettyBootStrapInitializer {
+public class NettyClientBootStrapInitializer {
 
     private static Bootstrap bootstrap = new Bootstrap();
     private static EventLoopGroup group = new NioEventLoopGroup();

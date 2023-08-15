@@ -133,7 +133,7 @@ public class LxlRpcBootStrap {
                 });
 
         try {
-            ChannelFuture channelFuture = serverBootstrap.bind(new InetSocketAddress("127.0.0.1", 8088)).sync();
+            ChannelFuture channelFuture = serverBootstrap.bind(8088).sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
