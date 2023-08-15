@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -50,8 +51,30 @@ public class RpcInvocationHandler implements InvocationHandler {
 
         //----------------------封装报文
 
-
         //使用netty连接服务器 发送服务的名字+方法的名字+参数列表,得到结果
+        Channel channel = this.getAvaliableChanel(inetSocketAddress);
+
+        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(1l,new CompletableFuture<>());
+        CompletableFuture<Object> objectCompletableFuture = LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(1L);
+        ChannelFuture channelFuture = channel.writeAndFlush(Unpooled.wrappedBuffer("我是客户端，".getBytes(StandardCharsets.UTF_8)));
+        //添加监听器
+        channelFuture.addListener((ChannelFutureListener) future -> {
+            if (!future.isSuccess()){
+                //需要捕获异步任务当中的异常
+                objectCompletableFuture.completeExceptionally(future.cause());
+            }
+        });
+        return objectCompletableFuture.get(3, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 获取可用的channel,先尝试从缓存当中获取，如果获取不到就使用Netty建立新的连接
+     * @param inetSocketAddress
+     * @return
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    private Channel getAvaliableChanel(InetSocketAddress inetSocketAddress) throws ExecutionException, InterruptedException {
         Channel channel = LxlRpcBootStrap.CHANNEL_CACHE.get(inetSocketAddress);
         if (channel==null) {
             //连接服务器
@@ -73,18 +96,6 @@ public class RpcInvocationHandler implements InvocationHandler {
             LxlRpcBootStrap.CHANNEL_CACHE.put(inetSocketAddress,channel);
         }
         if (channel==null)throw new NetWorkException("Netty获取channel对象实例失败");
-
-
-        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(1l,new CompletableFuture<>());
-        CompletableFuture<Object> objectCompletableFuture = LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(1L);
-        ChannelFuture channelFuture = channel.writeAndFlush(Unpooled.wrappedBuffer("我是客户端，".getBytes(StandardCharsets.UTF_8)));
-        //添加监听器
-        channelFuture.addListener((ChannelFutureListener) future -> {
-            if (!future.isSuccess()){
-                //需要捕获异步任务当中的异常
-                objectCompletableFuture.completeExceptionally(future.cause());
-            }
-        });
-        return objectCompletableFuture.get(3, TimeUnit.SECONDS);
+        return channel;
     }
 }
