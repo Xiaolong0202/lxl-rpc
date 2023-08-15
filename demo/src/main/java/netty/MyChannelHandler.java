@@ -6,13 +6,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class MyChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf byteBuf = (ByteBuf) msg;
-        System.out.println("服务端已经收到了消息:"+byteBuf.toString(Charset.forName("utf-8")));
-        ctx.channel().writeAndFlush(Unpooled.copiedBuffer("你好，我是服务器，我已经收到消息了".getBytes(Charset.forName("utf-8"))));
+        System.out.println("服务端已经收到了消息:"+byteBuf.toString(StandardCharsets.UTF_8));
+        ctx.channel().writeAndFlush(Unpooled.copiedBuffer("你好，我是服务器，我已经收到消息了".getBytes(StandardCharsets.UTF_8)));
     }
 
     @Override

@@ -3,10 +3,20 @@ package com.lxl;
 import com.lxl.discovery.Registry;
 import com.lxl.discovery.RegistryConfig;
 import com.lxl.discovery.impl.ZookeeperRegistry;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -107,9 +117,36 @@ public class LxlRpcBootStrap {
      * 启动Netty服务
      */
     public void start(){
-         while (true){
+        EventLoopGroup boss = new NioEventLoopGroup();
+        EventLoopGroup worker = new NioEventLoopGroup();
 
-         }
+        ServerBootstrap serverBootstrap = new ServerBootstrap();
+        serverBootstrap.group(boss,worker)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        ch.pipeline().addLast(new ChannelInboundHandlerAdapter(){
+                            @Override
+                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                                ByteBuf byteBuf = (ByteBuf) msg;
+                                log.debug("provider->获取到结果:{}",byteBuf.toString(StandardCharsets.UTF_8));
+                                ctx.channel().writeAndFlush(Unpooled.wrappedBuffer("你好吗，我是provider".getBytes(StandardCharsets.UTF_8)));
+//                                ByteBuf byteBuf = (ByteBuf) msg;
+//                                System.out.println("服务端已经收到了消息:"+byteBuf.toString(StandardCharsets.UTF_8));
+//                                ctx.channel().writeAndFlush(Unpooled.copiedBuffer("你好，我是服务器，我已经收到消息了".getBytes(StandardCharsets.UTF_8)));
+//                                super.channelRead(ctx, msg);
+                            }
+                        });
+                    }
+                });
+
+        try {
+            ChannelFuture channelFuture = serverBootstrap.bind(new InetSocketAddress("127.0.0.1", 8088)).sync();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 

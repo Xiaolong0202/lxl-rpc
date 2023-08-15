@@ -39,6 +39,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
         //服务提供方的端口一般自己设定
         //ip我们使用的是局域网ip
         String ipAddr =  NetUtil.getLocalHostExactAddress();
+        if (log.isDebugEnabled())log.debug("局域网ip地址:"+ipAddr);
         //TODO  后续处理端口的问题
         String node = parentNode+'/'+ipAddr+':'+8088;
         ZookeeperUtil.createZookeeperNode(zooKeeper,new ZookeeperNode(node,null),null,CreateMode.EPHEMERAL);//创建一个临时的结点
