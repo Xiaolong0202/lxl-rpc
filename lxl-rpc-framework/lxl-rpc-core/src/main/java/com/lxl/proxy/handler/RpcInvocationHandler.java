@@ -19,6 +19,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 
+/**
+ * 该类封装了客户端通信的基础
+ * 1.发现服务 2.建立连接 3.发送请求 4.获取服务调用的结果
+ */
 @Slf4j
 public class RpcInvocationHandler implements InvocationHandler {
 
