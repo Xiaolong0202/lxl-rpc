@@ -5,10 +5,7 @@ import com.lxl.discovery.RegistryConfig;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -59,46 +56,15 @@ public class ReferenceConfig <T>{
                     log.debug("服务调用方，返回了服务【{}】的可用主机【{}】",interfaceRef.getName(),inetSocketAddress.getHostString());
                 }
                 //使用netty连接服务器 发送服务的名字+方法的名字+参数列表,得到结果
-//                NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup();
-//                Bootstrap bootstrap = new Bootstrap();
-//                bootstrap.group(nioEventLoopGroup)
-//                        .channel(NioSocketChannel.class)
-//                        .handler(new ChannelInitializer<SocketChannel>() {
-//                            @Override
-//                            protected void initChannel(SocketChannel ch) throws Exception {
-//                                ch.pipeline().addLast(new ChannelInboundHandlerAdapter(){
-//                                    @Override
-//                                    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-//                                        ByteBuf byteBuf = (ByteBuf) msg;
-//                                        log.debug("consumer->获取到结果:{}",byteBuf.toString(Charset.forName("utf-8")));
-//                                    }
-//                                });
-//                            }
-//                        });
-//                ChannelFuture channelFuture = bootstrap.connect("127.0.0.1", 8088).sync();
-//                channelFuture.channel().writeAndFlush(Unpooled.wrappedBuffer("你好吗，我是consumer".getBytes(Charset.forName("utf-8"))));
-                NioEventLoopGroup group = new NioEventLoopGroup();
-                //启动一个客户端需要一个辅助类
-                Bootstrap bootstrap  = new Bootstrap();
-                bootstrap.group(group)
-                        .remoteAddress(new InetSocketAddress("127.0.0.1",8088))
-                        .channel(NioSocketChannel.class)//选择初始化什么channel
-                        .handler(new ChannelInitializer<SocketChannel>() {
-                            @Override
-                            protected void initChannel(SocketChannel ch) throws Exception {
-                                ch.pipeline().addLast(new ChannelInboundHandlerAdapter(){
-                                    @Override
-                                    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                                        ByteBuf buf = (ByteBuf) msg;
-                                        System.out.println(((ByteBuf) msg).toString(StandardCharsets.UTF_8));
-                                    }
-                                });
-                            }
-                        });
-                ChannelFuture channelFuture = bootstrap.connect().sync();//Netty很多的方法是异步的，所以我们使用sync方法用于阻塞直到返回结果
-                channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer("你好吗，我是客户端".getBytes(StandardCharsets.UTF_8)));
-
-
+                Channel channel = LxlRpcBootStrap.CHANNEL_CACHE.get(inetSocketAddress);
+                if (channel==null) {
+                    //连接服务器
+                    channel = NettyBootStrapInitializer.getBootstrap().connect(inetSocketAddress).sync().channel();//Netty很多的方法是异步的，所以我们使用sync方法用于阻塞直到返回结果
+                    channel.writeAndFlush(Unpooled.copiedBuffer("你好吗，我是客户端".getBytes(StandardCharsets.UTF_8)));
+                    //缓存
+                    LxlRpcBootStrap.CHANNEL_CACHE.put(inetSocketAddress,channel);
+                }
+                channel.writeAndFlush(Unpooled.wrappedBuffer("我是客户端，我是用的缓存获取的channel".getBytes(StandardCharsets.UTF_8)));
                 return null;
             }
         });

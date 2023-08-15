@@ -2,7 +2,6 @@ package com.lxl;
 
 import com.lxl.discovery.Registry;
 import com.lxl.discovery.RegistryConfig;
-import com.lxl.discovery.impl.ZookeeperRegistry;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -10,26 +9,22 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
 
 
 public class LxlRpcBootStrap {
 
     Logger log = LoggerFactory.getLogger(LxlRpcBootStrap.class);
 
-
-    public static Map<String,ServiceConfig> serviceAndImplMap = new ConcurrentHashMap<>(256);
+    public static final Map<InetSocketAddress,Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(256);
+    public static final Map<String,ServiceConfig> SERVICE_CONFIG_CACHE = new ConcurrentHashMap<>(256);
     private String applicationName = "lxlRPC-default-application";
 //    private RegistryConfig registryConfig;
     private ServiceConfig serviceConfig;
@@ -98,7 +93,7 @@ public class LxlRpcBootStrap {
     public LxlRpcBootStrap publish(ServiceConfig<?> service) {
         //使用了抽象注册中心的概念
         registry.register(service);
-        serviceAndImplMap.put(service.getInterface().getName(),service);
+        SERVICE_CONFIG_CACHE.put(service.getInterface().getName(),service);
         return this;
     }
 
@@ -132,10 +127,6 @@ public class LxlRpcBootStrap {
                                 ByteBuf byteBuf = (ByteBuf) msg;
                                 log.debug("provider->获取到结果:{}",byteBuf.toString(StandardCharsets.UTF_8));
                                 ctx.channel().writeAndFlush(Unpooled.wrappedBuffer("你好吗，我是provider".getBytes(StandardCharsets.UTF_8)));
-//                                ByteBuf byteBuf = (ByteBuf) msg;
-//                                System.out.println("服务端已经收到了消息:"+byteBuf.toString(StandardCharsets.UTF_8));
-//                                ctx.channel().writeAndFlush(Unpooled.copiedBuffer("你好，我是服务器，我已经收到消息了".getBytes(StandardCharsets.UTF_8)));
-//                                super.channelRead(ctx, msg);
                             }
                         });
                     }
