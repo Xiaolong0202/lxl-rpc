@@ -2,6 +2,7 @@ package com.lxl;
 
 import com.lxl.discovery.Registry;
 import com.lxl.discovery.RegistryConfig;
+import com.lxl.exceptions.NetWorkException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -17,6 +18,9 @@ import java.lang.reflect.Proxy;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -55,17 +59,44 @@ public class ReferenceConfig <T>{
                 if (log.isDebugEnabled()){
                     log.debug("服务调用方，返回了服务【{}】的可用主机【{}】",interfaceRef.getName(),inetSocketAddress.getHostString());
                 }
+
+                //----------------------封装报文
+
+
                 //使用netty连接服务器 发送服务的名字+方法的名字+参数列表,得到结果
                 Channel channel = LxlRpcBootStrap.CHANNEL_CACHE.get(inetSocketAddress);
                 if (channel==null) {
                     //连接服务器
-                    channel = NettyBootStrapInitializer.getBootstrap().connect(inetSocketAddress).sync().channel();//Netty很多的方法是异步的，所以我们使用sync方法用于阻塞直到返回结果
+                    CompletableFuture<Channel> channelCompletableFuture = new CompletableFuture();
+                    //使用异步的方式获取
+                    NettyBootStrapInitializer.getBootstrap().connect(inetSocketAddress).addListener(new ChannelFutureListener() {
+                        @Override
+                        public void operationComplete(ChannelFuture future) throws Exception {
+                            if (future.isSuccess()){
+                                channelCompletableFuture.complete(future.channel());
+                            }else {
+                                channelCompletableFuture.completeExceptionally(future.cause());
+                            }
+                        }
+                    });//用于阻塞直到返回结果
+                    channel = channelCompletableFuture.get();
                     channel.writeAndFlush(Unpooled.copiedBuffer("你好吗，我是客户端".getBytes(StandardCharsets.UTF_8)));
                     //缓存
                     LxlRpcBootStrap.CHANNEL_CACHE.put(inetSocketAddress,channel);
                 }
-                channel.writeAndFlush(Unpooled.wrappedBuffer("我是客户端，我是用的缓存获取的channel".getBytes(StandardCharsets.UTF_8)));
-                return null;
+                if (channel==null)throw new NetWorkException("Netty获取channel对象实例失败");
+
+                CompletableFuture<Object> objectCompletableFuture = new CompletableFuture<>();
+                ChannelFuture channelFuture = channel.writeAndFlush(Unpooled.wrappedBuffer("我是客户端，我是用的缓存获取的channel".getBytes(StandardCharsets.UTF_8)));
+                //添加监听器
+                channelFuture.addListener((ChannelFutureListener) future -> {
+                    if (!future.isSuccess()){
+                        //需要捕获异步任务当中的异常
+                        objectCompletableFuture.completeExceptionally(future.cause());
+                    }
+                });
+
+                return objectCompletableFuture.get(3, TimeUnit.SECONDS);
             }
         });
         return (T) helloProxy;
