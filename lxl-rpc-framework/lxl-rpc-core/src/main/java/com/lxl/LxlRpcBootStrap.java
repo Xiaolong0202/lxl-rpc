@@ -16,6 +16,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -25,6 +26,8 @@ public class LxlRpcBootStrap {
 
     public static final Map<InetSocketAddress,Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(256);
     public static final Map<String,ServiceConfig> SERVICE_CONFIG_CACHE = new ConcurrentHashMap<>(256);
+    //用于存储completableFutrue,一个completableFutrue就维护这一次远程方法调用的操作
+    public static final Map<Long, CompletableFuture<Object>> COMPLETABLE_FUTURE_CACHE = new ConcurrentHashMap<>(256);
     private String applicationName = "lxlRPC-default-application";
 //    private RegistryConfig registryConfig;
     private ServiceConfig serviceConfig;

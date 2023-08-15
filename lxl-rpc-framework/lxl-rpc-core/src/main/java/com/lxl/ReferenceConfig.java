@@ -78,7 +78,9 @@ public class ReferenceConfig <T>{
                 }
                 if (channel==null)throw new NetWorkException("Netty获取channel对象实例失败");
 
-                CompletableFuture<Object> objectCompletableFuture = new CompletableFuture<>();
+
+                LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(1l,new CompletableFuture<>());
+                CompletableFuture<Object> objectCompletableFuture = LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(1L);
                 ChannelFuture channelFuture = channel.writeAndFlush(Unpooled.wrappedBuffer("我是客户端，".getBytes(StandardCharsets.UTF_8)));
                 //添加监听器
                 channelFuture.addListener((ChannelFutureListener) future -> {
@@ -87,9 +89,7 @@ public class ReferenceConfig <T>{
                         objectCompletableFuture.completeExceptionally(future.cause());
                     }
                 });
-
-//                return objectCompletableFuture.get(3, TimeUnit.SECONDS);
-                return null;
+                return objectCompletableFuture.get(3, TimeUnit.SECONDS);
             }
         });
         return (T) helloProxy;

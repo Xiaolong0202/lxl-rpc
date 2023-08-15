@@ -26,7 +26,8 @@ public class NettyClientBootStrapInitializer {
                         ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
                             @Override
                             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                                System.out.println(((ByteBuf) msg).toString(StandardCharsets.UTF_8));
+                                String res = ((ByteBuf) msg).toString(StandardCharsets.UTF_8);
+                                LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(1L).complete(res);
                             }
                         });
                     }
