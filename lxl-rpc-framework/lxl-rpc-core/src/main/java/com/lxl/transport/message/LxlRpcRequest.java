@@ -6,11 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class LxlRpcRequest {
+public class LxlRpcRequest implements Serializable {
 
     //请求的类型
     private long requestId;
