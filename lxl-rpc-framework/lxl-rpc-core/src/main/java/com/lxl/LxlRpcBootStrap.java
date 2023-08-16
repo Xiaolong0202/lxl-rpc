@@ -1,5 +1,6 @@
 package com.lxl;
 
+import com.lxl.channelHandler.handler.MethodCallInBoundHandler;
 import com.lxl.channelHandler.handler.ProviderRequestDecoder;
 import com.lxl.discovery.Registry;
 import com.lxl.discovery.RegistryConfig;
@@ -129,7 +130,8 @@ public class LxlRpcBootStrap {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline()
                                 .addLast(new LoggingHandler(LogLevel.DEBUG))
-                                .addLast(new ProviderRequestDecoder())
+                                .addLast(new ProviderRequestDecoder())//解码器
+                                .addLast(new MethodCallInBoundHandler())//根据请求进行方法调用
                                 .addLast(new ChannelInboundHandlerAdapter(){
                             @Override
                             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

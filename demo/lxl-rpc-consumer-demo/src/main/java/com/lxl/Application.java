@@ -16,7 +16,7 @@ public class Application {
         //代理都做了什么  连接注册中心  获取服务列表  选择一个服务进行连接 发送请求（接口名，参数列表）
 
         GreetingsService greetingsService = referenceConfig.get();
-        String sayHello = greetingsService.sayHello("刘孝龙");
-        System.out.println(sayHello);
+        String res = greetingsService.add(12,23);
+        System.out.println(res);
     }
 }

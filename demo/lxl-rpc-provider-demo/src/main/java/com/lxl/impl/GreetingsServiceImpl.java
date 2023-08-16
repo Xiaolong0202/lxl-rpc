@@ -7,4 +7,9 @@ public class GreetingsServiceImpl implements GreetingsService {
     public String sayHello(String name) {
         return "hi  "+name;
     }
+
+    @Override
+    public String add(int a, int b) {
+        return String.valueOf(a+b);
+    }
 }
