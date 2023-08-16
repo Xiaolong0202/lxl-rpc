@@ -4,6 +4,8 @@ import com.lxl.LxlRpcBootStrap;
 import com.lxl.NettyClientBootStrapInitializer;
 import com.lxl.discovery.Registry;
 import com.lxl.exceptions.NetWorkException;
+import com.lxl.transport.message.LxlRpcRequest;
+import com.lxl.transport.message.RequestPayload;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -45,30 +47,42 @@ public class RpcInvocationHandler implements InvocationHandler {
         System.out.println("hello proxy");
         //从注册中心找一个可用的服务
         InetSocketAddress inetSocketAddress = registry.lookup(interfaceRef.getName());
-        if (log.isDebugEnabled()){
-            log.debug("服务调用方，返回了服务【{}】的可用主机【{}】",interfaceRef.getName(),inetSocketAddress.getHostString());
+        if (log.isDebugEnabled()) {
+            log.debug("服务调用方，返回了服务【{}】的可用主机【{}】", interfaceRef.getName(), inetSocketAddress.getHostString());
         }
 
         //----------------------封装报文
+        //首先构建请求类
+        RequestPayload payload = new RequestPayload(interfaceRef.getName(), method.getName(), method.getParameterTypes(), args, method.getReturnType());
+        //TODO 对各种请求与id做处理
+        LxlRpcRequest rpcRequest = LxlRpcRequest.builder()
+                .requestId(1L)
+                .compressType((byte) 1)
+                .serializableType((byte) 1)
+                .requestType((byte) 1)
+                .requestPayload(payload)
+                .build();
 
         //使用netty连接服务器 发送服务的名字+方法的名字+参数列表,得到结果
-        Channel channel = this.getAvaliableChanel(inetSocketAddress);
+                Channel channel = this.getAvaliableChanel(inetSocketAddress);
 
-        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(1l,new CompletableFuture<>());
+        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(1l, new CompletableFuture<>());
         CompletableFuture<Object> objectCompletableFuture = LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(1L);
-        ChannelFuture channelFuture = channel.writeAndFlush(Unpooled.wrappedBuffer("我是客户端，".getBytes(StandardCharsets.UTF_8)));
+        //发送消息,请求
+        ChannelFuture channelFuture = channel.writeAndFlush(rpcRequest);
         //添加监听器
         channelFuture.addListener((ChannelFutureListener) future -> {
-            if (!future.isSuccess()){
+            if (!future.isSuccess()) {
                 //需要捕获异步任务当中的异常
                 objectCompletableFuture.completeExceptionally(future.cause());
             }
         });
-        return objectCompletableFuture.get(3, TimeUnit.SECONDS);
+        return objectCompletableFuture.get(3, TimeUnit.SECONDS);//如果返回时间超过三秒则视为相应失败
     }
 
     /**
      * 获取可用的channel,先尝试从缓存当中获取，如果获取不到就使用Netty建立新的连接
+     *
      * @param inetSocketAddress
      * @return
      * @throws ExecutionException
@@ -76,16 +90,16 @@ public class RpcInvocationHandler implements InvocationHandler {
      */
     private Channel getAvaliableChanel(InetSocketAddress inetSocketAddress) throws ExecutionException, InterruptedException {
         Channel channel = LxlRpcBootStrap.CHANNEL_CACHE.get(inetSocketAddress);
-        if (channel==null) {
+        if (channel == null) {
             //连接服务器
             CompletableFuture<Channel> channelCompletableFuture = new CompletableFuture();
             //使用异步的方式获取
             NettyClientBootStrapInitializer.getBootstrap().connect(inetSocketAddress).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
-                    if (future.isSuccess()){
+                    if (future.isSuccess()) {
                         channelCompletableFuture.complete(future.channel());
-                    }else {
+                    } else {
                         channelCompletableFuture.completeExceptionally(future.cause());
                     }
                 }
@@ -93,9 +107,9 @@ public class RpcInvocationHandler implements InvocationHandler {
             channel = channelCompletableFuture.get();
             channel.writeAndFlush(Unpooled.copiedBuffer("你好吗，我是客户端".getBytes(StandardCharsets.UTF_8)));
             //缓存
-            LxlRpcBootStrap.CHANNEL_CACHE.put(inetSocketAddress,channel);
+            LxlRpcBootStrap.CHANNEL_CACHE.put(inetSocketAddress, channel);
         }
-        if (channel==null)throw new NetWorkException("Netty获取channel对象实例失败");
+        if (channel == null) throw new NetWorkException("Netty获取channel对象实例失败");
         return channel;
     }
 }
