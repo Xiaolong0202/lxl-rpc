@@ -23,22 +23,36 @@ public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpc
         RequestPayload payload = msg.getRequestPayload();
         long requestId = msg.getRequestId();
         Object res = invokeMethod(payload,requestId);//根据请求体调用方法
+
+        //封装响应
+
+        //写出响应
+
         ctx.fireChannelRead(msg);
     }
 
     //使用反射去调用方法,服务的方法
     private Object invokeMethod(RequestPayload payload,long requestId) {
-        ServiceConfig serviceConfig = LxlRpcBootStrap.SERVICE_CONFIG_CACHE.get(payload.getInterfaceName());
-        Class interfaceClass = serviceConfig.getInterface();
         try {
+            //从缓存当中获取对应的serviceConfig
+            ServiceConfig serviceConfig = LxlRpcBootStrap.SERVICE_CONFIG_CACHE.get(payload.getInterfaceName());
+            Class interfaceClass = serviceConfig.getInterface();
+            //使用反射直接去调用方法
             Method method = interfaceClass.getDeclaredMethod(payload.getMethodName(), payload.getMethodParametersClass());
+            method.setAccessible(true);
             Object serviceImpl = serviceConfig.getRef();
             Object methodInvokeResult = method.invoke(serviceImpl, payload.getMethodParametersValue());
             System.out.println("methodInvokeResult = " + methodInvokeResult);
             return methodInvokeResult;
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            log.error("请求【{}】使用反射进行方法调用实现时出现异常",requestId,e);
+            log.error("调用服务【{}】，使用反射进行【{}】方法调用实现时出现异常",payload.getInterfaceName(),payload.getMethodName(),e);
             throw new RuntimeException(e);
         }
     }
+
+    public static void main(String[] args) throws ClassNotFoundException {
+
+    }
 }
+
+

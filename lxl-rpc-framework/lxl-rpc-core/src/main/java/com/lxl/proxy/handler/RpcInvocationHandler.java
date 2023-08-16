@@ -3,20 +3,18 @@ package com.lxl.proxy.handler;
 import com.lxl.LxlRpcBootStrap;
 import com.lxl.NettyClientBootStrapInitializer;
 import com.lxl.discovery.Registry;
+import com.lxl.enumnation.RequestType;
 import com.lxl.exceptions.NetWorkException;
 import com.lxl.transport.message.LxlRpcRequest;
 import com.lxl.transport.message.RequestPayload;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.ObjectStreamClass;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -59,14 +57,14 @@ public class RpcInvocationHandler implements InvocationHandler {
                 .requestId(1L)
                 .compressType((byte) 1)
                 .serializableType((byte) 1)
-                .requestType((byte) 1)
+                .requestType(RequestType.REQUEST.ID)
                 .requestPayload(payload)
                 .build();
 
         //使用netty连接服务器 发送服务的名字+方法的名字+参数列表,得到结果
         Channel channel = this.getAvaliableChanel(inetSocketAddress);
 
-        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(1l, new CompletableFuture<>());
+        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(1L, new CompletableFuture<>());
         CompletableFuture<Object> objectCompletableFuture = LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(1L);
         //发送消息,请求
         ChannelFuture channelFuture = channel.writeAndFlush(rpcRequest);

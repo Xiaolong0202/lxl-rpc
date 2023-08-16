@@ -1,5 +1,6 @@
 package com.lxl.channelHandler.handler;
 
+import com.lxl.enumnation.RequestType;
 import com.lxl.exceptions.NetWorkException;
 import com.lxl.transport.message.LxlRpcRequest;
 import com.lxl.transport.message.RequestPayload;
@@ -60,8 +61,11 @@ public class ProviderRequestDecoder extends LengthFieldBasedFrameDecoder {
         int payLoadLen = (int) (fullLen - headLen);
         byte [] requestBody = new byte[payLoadLen];
         byteBuf.readBytes(requestBody);
-        //将请求体反序列化 todo 心跳请求没有请求体
-        RequestPayload requestPayload =  getPayLoadObject(requestBody,requestId);
+        //将请求体反序列化  心跳请求没有请求体
+        RequestPayload requestPayload = null;
+        if (requestType == RequestType.REQUEST.ID) {
+             requestPayload =  getPayLoadObject(requestBody,requestId);
+        }
 
         //得到请求
         LxlRpcRequest request = new LxlRpcRequest();

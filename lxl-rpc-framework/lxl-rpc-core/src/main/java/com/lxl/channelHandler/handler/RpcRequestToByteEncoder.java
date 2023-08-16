@@ -1,5 +1,6 @@
 package com.lxl.channelHandler.handler;
 
+import com.lxl.enumnation.RequestType;
 import com.lxl.transport.message.LxlRpcRequest;
 import com.lxl.transport.message.RequestPayload;
 import io.netty.buffer.ByteBuf;
@@ -8,6 +9,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.util.Arrays;
 
 
 /**
@@ -40,12 +42,14 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
         out.writeByte(msg.getCompressType());
         out.writeByte(msg.getRequestType());
         out.writeLong(msg.getRequestId());
+        if (msg.getRequestType() == RequestType.HEART_BEAT.ID)return;//如果是心跳请求，则可以直接返回，因为没有请求体
         //请求体
         out.writeBytes(payLoadBytes);
     }
 
 
     private byte[] getPayLoadBytes(RequestPayload msg){
+        if (msg == null)return new byte[0];
         //TODO针对不同的消息做不同的处理,
         //进行对象的序列化与压缩
         try {
@@ -58,6 +62,5 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
             throw new RuntimeException(e);
         }
     }
-
 
 }
