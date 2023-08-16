@@ -46,6 +46,7 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
 
 
     private byte[] getPayLoadBytes(RequestPayload msg){
+        //TODO针对不同的消息做不同的处理,
         //进行对象的序列化与压缩
         try {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

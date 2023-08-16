@@ -128,6 +128,7 @@ public class LxlRpcBootStrap {
                             @Override
                             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                                 ByteBuf byteBuf = (ByteBuf) msg;
+                                System.out.println("收到了消息!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                                 log.debug("provider->获取到结果:{}",byteBuf.toString(StandardCharsets.UTF_8));
                                 ctx.channel().writeAndFlush(Unpooled.wrappedBuffer("你好吗，我是provider".getBytes(StandardCharsets.UTF_8)));
                             }

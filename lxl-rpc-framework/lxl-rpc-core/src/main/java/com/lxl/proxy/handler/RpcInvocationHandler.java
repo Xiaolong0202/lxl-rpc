@@ -64,7 +64,7 @@ public class RpcInvocationHandler implements InvocationHandler {
                 .build();
 
         //使用netty连接服务器 发送服务的名字+方法的名字+参数列表,得到结果
-                Channel channel = this.getAvaliableChanel(inetSocketAddress);
+        Channel channel = this.getAvaliableChanel(inetSocketAddress);
 
         LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(1l, new CompletableFuture<>());
         CompletableFuture<Object> objectCompletableFuture = LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(1L);
@@ -105,7 +105,7 @@ public class RpcInvocationHandler implements InvocationHandler {
                 }
             });//用于阻塞直到返回结果
             channel = channelCompletableFuture.get();
-            channel.writeAndFlush(Unpooled.copiedBuffer("你好吗，我是客户端".getBytes(StandardCharsets.UTF_8)));
+//            channel.writeAndFlush(Unpooled.copiedBuffer("你好吗，我是客户端".getBytes(StandardCharsets.UTF_8)));
             //缓存
             LxlRpcBootStrap.CHANNEL_CACHE.put(inetSocketAddress, channel);
         }

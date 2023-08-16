@@ -17,6 +17,6 @@ public class Application {
 
         GreetingsService greetingsService = referenceConfig.get();
         String sayHello = greetingsService.sayHello("刘孝龙");
-        System.out.println(sayHello+"--使用代理对象的结果");
+        System.out.println(sayHello);
     }
 }
