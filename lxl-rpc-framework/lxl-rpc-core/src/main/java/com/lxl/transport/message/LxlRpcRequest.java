@@ -16,7 +16,6 @@ public class LxlRpcRequest implements Serializable {
 
     //请求的类型
     private long requestId;
-
     private byte requestType;
     private byte compressType;
     private byte serializableType;
