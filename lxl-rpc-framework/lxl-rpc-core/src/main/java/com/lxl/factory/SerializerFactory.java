@@ -6,6 +6,9 @@ import com.lxl.serialize.Serializer;
 import com.lxl.serialize.impl.JdkSerializerImpl;
 import com.lxl.serialize.impl.JsonSerializerImpl;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * @Author LiuXiaolong
  * @Description lxl-rpc
@@ -13,14 +16,21 @@ import com.lxl.serialize.impl.JsonSerializerImpl;
  **/
 public class SerializerFactory {
 
+    //序列化器的缓存
+    private static final Map<SerializeType,Serializer> SERIALIZER_CACHE = new ConcurrentHashMap<>(8);
+
     public static Serializer getSerializer(SerializeType serializeType){
+        Serializer serializer = SERIALIZER_CACHE.get(serializeType);
+        if (serializer != null)return serializer;
         if (serializeType == SerializeType.JDK){
-            return new JdkSerializerImpl();
+            serializer = new JdkSerializerImpl();
         }else if (serializeType == SerializeType.JSON){
-            return new JsonSerializerImpl();
+            serializer = new JsonSerializerImpl();
         }else {
             throw new SerializerException("给定的序列化类型没有对应的实现 ");
         }
+        SERIALIZER_CACHE.put(serializeType,serializer);
+        return serializer;
     }
 
 }
