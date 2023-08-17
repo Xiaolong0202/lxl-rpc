@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * 序列化器的工厂
+ *
  * @Author LiuXiaolong
  * @Description lxl-rpc
  * @DateTime 2023/8/17  23:35
