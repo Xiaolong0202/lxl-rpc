@@ -1,12 +1,9 @@
 package com.lxl;
 
-import com.lxl.channelHandler.handler.MySimpleChannelInboundHandler;
-import com.lxl.proxy.ConsumerChannelInitializer;
+import com.lxl.channelHandler.ConsumerChannelInitializer;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 public class NettyClientBootStrapInitializer {

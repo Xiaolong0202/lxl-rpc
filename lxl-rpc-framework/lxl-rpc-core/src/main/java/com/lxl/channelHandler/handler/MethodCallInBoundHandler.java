@@ -2,8 +2,10 @@ package com.lxl.channelHandler.handler;
 
 import com.lxl.LxlRpcBootStrap;
 import com.lxl.ServiceConfig;
-import com.lxl.transport.message.LxlRpcRequest;
-import com.lxl.transport.message.RequestPayload;
+import com.lxl.enumnation.ResponseType;
+import com.lxl.transport.message.request.LxlRpcRequest;
+import com.lxl.transport.message.request.RequestPayload;
+import com.lxl.transport.message.response.LxlRpcResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -22,17 +24,25 @@ public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpc
     protected void channelRead0(ChannelHandlerContext ctx, LxlRpcRequest msg) throws Exception {
         RequestPayload payload = msg.getRequestPayload();
         long requestId = msg.getRequestId();
-        Object res = invokeMethod(payload,requestId);//根据请求体调用方法
+        Object res = invokeMethod(payload, requestId);//根据请求体调用方法
 
         //封装响应
-
+        LxlRpcResponse response = LxlRpcResponse.builder()
+                .compressType((byte) 1)
+                .serializableType((byte) 1)
+                .code(ResponseType.SUCCESS.CODE)
+                .object(res)
+                .requestId(msg.getRequestId())
+                .build();
+        if (log.isDebugEnabled()){
+            log.debug("服务端响应封装完成");
+        }
         //写出响应
-
-        ctx.fireChannelRead(msg);
+        ctx.channel().writeAndFlush(response);
     }
 
     //使用反射去调用方法,服务的方法
-    private Object invokeMethod(RequestPayload payload,long requestId) {
+    private Object invokeMethod(RequestPayload payload, long requestId) {
         try {
             //从缓存当中获取对应的serviceConfig
             ServiceConfig serviceConfig = LxlRpcBootStrap.SERVICE_CONFIG_CACHE.get(payload.getInterfaceName());
@@ -43,9 +53,12 @@ public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpc
             Object serviceImpl = serviceConfig.getRef();
             Object methodInvokeResult = method.invoke(serviceImpl, payload.getMethodParametersValue());
             System.out.println("methodInvokeResult = " + methodInvokeResult);
+            if (log.isDebugEnabled()){
+                log.debug("服务端方法调用已经完成");
+            }
             return methodInvokeResult;
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            log.error("调用服务【{}】，使用反射进行【{}】方法调用实现时出现异常",payload.getInterfaceName(),payload.getMethodName(),e);
+            log.error("调用服务【{}】，使用反射进行【{}】方法调用实现时出现异常", payload.getInterfaceName(), payload.getMethodName(), e);
             throw new RuntimeException(e);
         }
     }

@@ -1,12 +1,11 @@
 package com.lxl;
 
 import com.lxl.channelHandler.handler.MethodCallInBoundHandler;
-import com.lxl.channelHandler.handler.ProviderRequestDecoder;
+import com.lxl.channelHandler.handler.RpcRequestDecoder;
+import com.lxl.channelHandler.handler.RpcResponseToByteEncoder;
 import com.lxl.discovery.Registry;
 import com.lxl.discovery.RegistryConfig;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -17,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -130,16 +128,9 @@ public class LxlRpcBootStrap {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline()
                                 .addLast(new LoggingHandler(LogLevel.DEBUG))
-                                .addLast(new ProviderRequestDecoder())//解码器
+                                .addLast(new RpcRequestDecoder())//解码器
                                 .addLast(new MethodCallInBoundHandler())//根据请求进行方法调用
-                                .addLast(new ChannelInboundHandlerAdapter(){
-                            @Override
-                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                                System.out.println("收到了消息!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                                log.debug("provider->获取到结果:{}",msg.toString());
-                                ctx.channel().writeAndFlush(Unpooled.wrappedBuffer("你好吗，我是provider".getBytes(StandardCharsets.UTF_8)));
-                            }
-                        });
+                                .addLast(new RpcResponseToByteEncoder());//解析返回的相应
                     }
                 });
 

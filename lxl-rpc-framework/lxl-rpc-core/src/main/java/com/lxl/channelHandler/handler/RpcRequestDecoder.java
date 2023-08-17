@@ -2,15 +2,14 @@ package com.lxl.channelHandler.handler;
 
 import com.lxl.enumnation.RequestType;
 import com.lxl.exceptions.NetWorkException;
-import com.lxl.transport.message.LxlRpcRequest;
-import com.lxl.transport.message.RequestPayload;
+import com.lxl.transport.message.request.LxlRpcRequest;
+import com.lxl.transport.message.request.RequestPayload;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 
 /**
  * @Author LiuXiaolong
@@ -18,11 +17,11 @@ import java.nio.charset.StandardCharsets;
  * @DateTime 2023/8/16  19:51
  **/
 @Slf4j
-public class ProviderRequestDecoder extends LengthFieldBasedFrameDecoder {
+public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
 
 
-    public ProviderRequestDecoder( ) {
-        super(1024*1024, RequestMessageConstant.LENGTH_FIELD_OFFSET, RequestMessageConstant.LENGTH_FIELD_LENGTH);
+    public RpcRequestDecoder( ) {
+        super(1024*1024, MessageEncoderConstant.REQUEST_LENGTH_FIELD_OFFSET, MessageEncoderConstant.LENGTH_FIELD_LENGTH);
     }
 
     @Override
@@ -32,17 +31,17 @@ public class ProviderRequestDecoder extends LengthFieldBasedFrameDecoder {
 
     private Object decodeFrame(ByteBuf byteBuf) {
         //1.解析魔数值
-        byte[] magic = new byte[RequestMessageConstant.MAGIC_NUM.length];
+        byte[] magic = new byte[MessageEncoderConstant.MAGIC_NUM.length];
         byteBuf.readBytes(magic);
         //魔术值校验
         for (int i = 0; i < magic.length; i++) {
-            if (magic[i] != RequestMessageConstant.MAGIC_NUM[i]){
+            if (magic[i] != MessageEncoderConstant.MAGIC_NUM[i]){
                 throw new NetWorkException("provider---魔术值校验异常,请求值异常");
             }
         }
         //解析版本
         byte version = byteBuf.readByte();
-        if (version!=RequestMessageConstant.VERSION)throw new NetWorkException("provider---请求版本不支持");
+        if (version!= MessageEncoderConstant.VERSION)throw new NetWorkException("provider---请求版本不支持");
 
         //解析头部长度
         short headLen = byteBuf.readShort();
@@ -75,6 +74,9 @@ public class ProviderRequestDecoder extends LengthFieldBasedFrameDecoder {
         request.setSerializableType(serializeType);
         request.setRequestPayload(requestPayload);
 
+        if (log.isDebugEnabled()){
+            log.debug("请求【{}】，在服务端已经完成解码,并封装成了对应的请求实体类",requestId);
+        }
         return request;
     }
 

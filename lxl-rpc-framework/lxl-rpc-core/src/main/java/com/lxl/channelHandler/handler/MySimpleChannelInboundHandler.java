@@ -1,17 +1,15 @@
 package com.lxl.channelHandler.handler;
 
 import com.lxl.LxlRpcBootStrap;
-import io.netty.buffer.ByteBuf;
+import com.lxl.transport.message.response.LxlRpcResponse;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-import java.nio.charset.StandardCharsets;
 
-public class MySimpleChannelInboundHandler extends SimpleChannelInboundHandler<ByteBuf>  {
+public class MySimpleChannelInboundHandler extends SimpleChannelInboundHandler<LxlRpcResponse>  {
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-        String res = msg.toString(StandardCharsets.UTF_8);
+    protected void channelRead0(ChannelHandlerContext ctx, LxlRpcResponse msg) throws Exception {
+        String res = msg.toString();
         LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(1L).complete(res);
     }
 }

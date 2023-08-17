@@ -1,4 +1,4 @@
-package com.lxl.transport.message;
+package com.lxl.transport.message.request;
 
 
 import lombok.AllArgsConstructor;

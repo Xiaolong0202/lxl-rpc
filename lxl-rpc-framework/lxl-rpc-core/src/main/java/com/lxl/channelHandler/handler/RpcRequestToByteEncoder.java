@@ -1,15 +1,14 @@
 package com.lxl.channelHandler.handler;
 
 import com.lxl.enumnation.RequestType;
-import com.lxl.transport.message.LxlRpcRequest;
-import com.lxl.transport.message.RequestPayload;
+import com.lxl.transport.message.request.LxlRpcRequest;
+import com.lxl.transport.message.request.RequestPayload;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
-import java.util.Arrays;
 
 
 /**
@@ -32,11 +31,11 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
     @Override
     protected void encode(ChannelHandlerContext ctx, LxlRpcRequest msg, ByteBuf out) throws Exception {
         byte[] payLoadBytes = getPayLoadBytes(msg.getRequestPayload());
-        long fullLength = RequestMessageConstant.HEAD_LENGTH + payLoadBytes.length;
+        long fullLength = MessageEncoderConstant.REQUEST_HEAD_LENGTH + payLoadBytes.length;
         //请求头
-        out.writeBytes(RequestMessageConstant.MAGIC_NUM);
-        out.writeByte(RequestMessageConstant.VERSION);
-        out.writeShort(RequestMessageConstant.HEAD_LENGTH);
+        out.writeBytes(MessageEncoderConstant.MAGIC_NUM);
+        out.writeByte(MessageEncoderConstant.VERSION);
+        out.writeShort(MessageEncoderConstant.REQUEST_HEAD_LENGTH);
         out.writeLong(fullLength);
         out.writeByte(msg.getSerializableType());
         out.writeByte(msg.getCompressType());
@@ -45,6 +44,9 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
         if (msg.getRequestType() == RequestType.HEART_BEAT.ID)return;//如果是心跳请求，则可以直接返回，因为没有请求体
         //请求体
         out.writeBytes(payLoadBytes);
+        if (log.isDebugEnabled()){
+            log.debug("请求【{}】在客户端，已经完成编码",msg.getRequestId());
+        }
     }
 
 
