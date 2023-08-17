@@ -12,7 +12,7 @@ import java.util.stream.Stream;
  **/
 public enum SerializeType {
 
-    JDK((byte) 1),JSON((byte) 2);
+    JDK((byte) 1),JSON((byte) 2),HESSIAN((byte) 3);
 
     public byte ID;
 

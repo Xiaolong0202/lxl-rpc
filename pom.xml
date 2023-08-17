@@ -66,6 +66,11 @@
                 <artifactId>lombok</artifactId>
                 <version>1.18.28</version>
             </dependency>
+            <dependency>
+                <groupId>com.caucho</groupId>
+                <artifactId>hessian</artifactId>
+                <version>4.0.66</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

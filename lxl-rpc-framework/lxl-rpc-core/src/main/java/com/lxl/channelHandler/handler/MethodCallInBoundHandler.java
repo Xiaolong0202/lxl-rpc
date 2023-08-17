@@ -3,6 +3,7 @@ package com.lxl.channelHandler.handler;
 import com.lxl.LxlRpcBootStrap;
 import com.lxl.ServiceConfig;
 import com.lxl.enumnation.ResponseType;
+import com.lxl.enumnation.SerializeType;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import com.lxl.transport.message.request.RequestPayload;
 import com.lxl.transport.message.response.LxlRpcResponse;
@@ -29,7 +30,7 @@ public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpc
         //封装响应
         LxlRpcResponse response = LxlRpcResponse.builder()
                 .compressType((byte) 1)
-                .serializableType((byte) 1)
+                .serializableType(msg.getSerializableType())
                 .code(ResponseType.SUCCESS.CODE)
                 .object(res)
                 .requestId(msg.getRequestId())
