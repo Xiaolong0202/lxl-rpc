@@ -4,6 +4,7 @@ import com.lxl.LxlRpcBootStrap;
 import com.lxl.NettyClientBootStrapInitializer;
 import com.lxl.discovery.Registry;
 import com.lxl.enumnation.RequestType;
+import com.lxl.enumnation.SerializeType;
 import com.lxl.exceptions.NetWorkException;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import com.lxl.transport.message.request.RequestPayload;
@@ -56,7 +57,7 @@ public class RpcInvocationHandler implements InvocationHandler {
         LxlRpcRequest rpcRequest = LxlRpcRequest.builder()
                 .requestId(LxlRpcBootStrap.ID_GENERATOR.getId())
                 .compressType((byte) 1)
-                .serializableType((byte) 1)
+                .serializableType(LxlRpcBootStrap.serializeType.ID)
                 .requestType(RequestType.REQUEST.ID)
                 .requestPayload(payload)
                 .build();

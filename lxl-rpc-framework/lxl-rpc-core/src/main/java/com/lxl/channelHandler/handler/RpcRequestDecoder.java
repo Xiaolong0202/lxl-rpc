@@ -1,7 +1,10 @@
 package com.lxl.channelHandler.handler;
 
 import com.lxl.enumnation.RequestType;
+import com.lxl.enumnation.SerializeType;
 import com.lxl.exceptions.NetWorkException;
+import com.lxl.factory.SerializerFactory;
+import com.lxl.serialize.Serializer;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import com.lxl.transport.message.request.RequestPayload;
 import io.netty.buffer.ByteBuf;
@@ -62,8 +65,10 @@ public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         byteBuf.readBytes(requestBody);
         //将请求体反序列化  心跳请求没有请求体
         RequestPayload requestPayload = null;
+        //获取序列化器
+        Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(serializeType));
         if (requestType == RequestType.REQUEST.ID) {
-             requestPayload =  getPayLoadObject(requestBody,requestId);
+             requestPayload =  serializer.disSerializer(requestBody,RequestPayload.class);
         }
 
         //得到请求
@@ -80,13 +85,5 @@ public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         return request;
     }
 
-    private RequestPayload getPayLoadObject(byte[] requestBody,long requestId) {
-        try (ByteArrayInputStream in = new ByteArrayInputStream(requestBody);
-                ObjectInputStream objectInputStream = new ObjectInputStream(in);){
-            return (RequestPayload) objectInputStream.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            log.error("请求【{}】,反序列化失败",requestId,e);
-            throw new RuntimeException(e);
-        }
-    }
+
 }

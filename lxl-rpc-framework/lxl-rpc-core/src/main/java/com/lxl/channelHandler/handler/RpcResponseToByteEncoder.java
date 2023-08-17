@@ -1,6 +1,9 @@
 package com.lxl.channelHandler.handler;
 
 import com.lxl.enumnation.ResponseType;
+import com.lxl.enumnation.SerializeType;
+import com.lxl.factory.SerializerFactory;
+import com.lxl.serialize.Serializer;
 import com.lxl.transport.message.response.LxlRpcResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,8 +36,8 @@ public class RpcResponseToByteEncoder extends MessageToByteEncoder<LxlRpcRespons
 
     @Override
     protected void encode(ChannelHandlerContext ctx, LxlRpcResponse msg, ByteBuf out) throws Exception {
-        
-        byte[] responseBody = getResponseBodyBytes(msg.getObject());
+        Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(msg.getSerializableType()));
+        byte[] responseBody = serializer.serialize(msg.getObject());
         out.writeBytes(MessageEncoderConstant.MAGIC_NUM);
         out.writeByte(MessageEncoderConstant.VERSION);
         out.writeShort(MessageEncoderConstant.RESPONSE_HEAD_LENGTH);
@@ -50,18 +53,5 @@ public class RpcResponseToByteEncoder extends MessageToByteEncoder<LxlRpcRespons
         }
     }
 
-    private byte[] getResponseBodyBytes(Object msg) {
-        if (msg == null)return new byte[0];
-        //TODO针对不同的消息做不同的处理,
-        //进行对象的序列化与压缩
-        try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-            objectOutputStream.writeObject(msg);
-            return byteArrayOutputStream.toByteArray();
-        } catch (IOException e) {
-            log.error("序列化的时候出现了错误");
-            throw new RuntimeException(e);
-        }
-    }
+
 }

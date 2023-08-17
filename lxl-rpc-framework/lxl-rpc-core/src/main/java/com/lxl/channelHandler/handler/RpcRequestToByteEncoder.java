@@ -1,6 +1,9 @@
 package com.lxl.channelHandler.handler;
 
 import com.lxl.enumnation.RequestType;
+import com.lxl.enumnation.SerializeType;
+import com.lxl.factory.SerializerFactory;
+import com.lxl.serialize.Serializer;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import com.lxl.transport.message.request.RequestPayload;
 import io.netty.buffer.ByteBuf;
@@ -30,7 +33,9 @@ import java.io.*;
 public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest> {
     @Override
     protected void encode(ChannelHandlerContext ctx, LxlRpcRequest msg, ByteBuf out) throws Exception {
-        byte[] payLoadBytes = getPayLoadBytes(msg.getRequestPayload());
+        //获取序列化器
+        Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(msg.getSerializableType()));
+        byte[] payLoadBytes = serializer.serialize(msg.getRequestPayload());
         long fullLength = MessageEncoderConstant.REQUEST_HEAD_LENGTH + payLoadBytes.length;
         //请求头
         out.writeBytes(MessageEncoderConstant.MAGIC_NUM);
@@ -46,22 +51,6 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
         out.writeBytes(payLoadBytes);
         if (log.isDebugEnabled()){
             log.debug("请求【{}】在客户端，已经完成编码",msg.getRequestId());
-        }
-    }
-
-
-    private byte[] getPayLoadBytes(RequestPayload msg){
-        if (msg == null)return new byte[0];
-        //TODO针对不同的消息做不同的处理,
-        //进行对象的序列化与压缩
-        try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-            objectOutputStream.writeObject(msg);
-            return byteArrayOutputStream.toByteArray();
-        } catch (IOException e) {
-            log.error("序列化的时候出现了错误");
-            throw new RuntimeException(e);
         }
     }
 

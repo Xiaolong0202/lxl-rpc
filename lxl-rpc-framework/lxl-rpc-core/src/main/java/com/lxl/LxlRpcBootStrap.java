@@ -5,6 +5,7 @@ import com.lxl.channelHandler.handler.RpcRequestDecoder;
 import com.lxl.channelHandler.handler.RpcResponseToByteEncoder;
 import com.lxl.discovery.Registry;
 import com.lxl.discovery.RegistryConfig;
+import com.lxl.enumnation.SerializeType;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -39,6 +40,7 @@ public class LxlRpcBootStrap {
 
     public static final  IdGenerator ID_GENERATOR = new IdGenerator(5,5);//id生成器
     private int port = 8088;
+    public static SerializeType serializeType;
 
 
     //是一个单例类
@@ -86,6 +88,10 @@ public class LxlRpcBootStrap {
         return this;
     }
 
+    public LxlRpcBootStrap serialize(SerializeType serializeType){
+        this.serializeType = serializeType;
+        return this;
+    }
 
     /**
      * --------------------------------服务提供方的api------------------------------------------

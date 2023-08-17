@@ -1,6 +1,7 @@
 package com.lxl;
 
 import com.lxl.discovery.RegistryConfig;
+import com.lxl.enumnation.SerializeType;
 import com.lxl.impl.GreetingsServiceImpl;
 
 import java.sql.Time;
@@ -21,8 +22,8 @@ public class Application {
                 .application("first-rpc-provider")
                 .registry(new RegistryConfig("zookeeper://39.107.52.125:2181"))
                 .protocol(new ProtocolConfig("jdk"))
-                .publish(service)
-                .start();//发布服务;
+                .publish(service)//发布服务;
+                .start();
 //        try {
 //            TimeUnit.SECONDS.sleep(20);
 //        } catch (InterruptedException e) {
