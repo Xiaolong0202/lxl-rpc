@@ -54,7 +54,7 @@ public class RpcInvocationHandler implements InvocationHandler {
         RequestPayload payload = new RequestPayload(interfaceRef.getName(), method.getName(), method.getParameterTypes(), args, method.getReturnType());
         //TODO 对各种请求与id做处理
         LxlRpcRequest rpcRequest = LxlRpcRequest.builder()
-                .requestId(1L)
+                .requestId(LxlRpcBootStrap.ID_GENERATOR.getId())
                 .compressType((byte) 1)
                 .serializableType((byte) 1)
                 .requestType(RequestType.REQUEST.ID)

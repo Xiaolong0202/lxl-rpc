@@ -36,6 +36,8 @@ public class LxlRpcBootStrap {
     private ProtocolConfig protocolConfig;
 
     private Registry registry;
+
+    public static final  IdGenerator ID_GENERATOR = new IdGenerator(5,5);//id生成器
     private int port = 8088;
 
 
