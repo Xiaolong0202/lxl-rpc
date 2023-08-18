@@ -1,15 +1,13 @@
 package com.lxl.compress.impl;
 
 import com.lxl.compress.Compresser;
+import com.lxl.exceptions.CompressException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+import java.util.zip.*;
 
 /**
  * @Author LiuXiaolong
@@ -21,24 +19,48 @@ public class ZipCompresserImpl implements Compresser {
 
     @Override
     public byte[] compress(byte[] bytes) {
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream(); ZipOutputStream gzipOutputStream = new ZipOutputStream(out);) {
-            gzipOutputStream.write(bytes);
-            byte[] res = out.toByteArray();
-            if (log.isDebugEnabled()) log.debug("完成字节流的压缩---ZIP");
-            return res;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        byte[] b = null;
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ZipOutputStream zip = new ZipOutputStream(bos);
+            ZipEntry entry = new ZipEntry("zip");
+            entry.setSize(bytes.length);
+            zip.putNextEntry(entry);
+            zip.write(bytes);
+            zip.closeEntry();
+            zip.close();
+            b = bos.toByteArray();
+            bos.close();
+        } catch (Exception ex) {
+            throw new CompressException(ex);
         }
+        if (log.isDebugEnabled()) log.debug("完成字节流的压缩---【{}】","zip");
+        return b;
     }
 
     @Override
     public byte[] decompress(byte[] bytes) {
-        try (ByteArrayInputStream in = new ByteArrayInputStream(bytes); ZipInputStream gzipInputStream = new ZipInputStream(in)){
-            byte[] allBytes = gzipInputStream.readAllBytes();
-            if (log.isDebugEnabled()) log.debug("完成字节流的解压缩---ZIP");
-            return allBytes;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        byte[] b = null;
+        try {
+            ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+            ZipInputStream zip = new ZipInputStream(bis);
+            while (zip.getNextEntry() != null) {
+                byte[] buf = new byte[1024];
+                int num = -1;
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                while ((num = zip.read(buf, 0, buf.length)) != -1) {
+                    baos.write(buf, 0, num);
+                }
+                b = baos.toByteArray();
+                baos.flush();
+                baos.close();
+            }
+            zip.close();
+            bis.close();
+        } catch (Exception ex) {
+            throw new CompressException(ex);
         }
+        if (log.isDebugEnabled()) log.debug("完成字节流的解压缩---【{}】","zip");
+        return b;
     }
 }

@@ -1,6 +1,7 @@
 package com.lxl.compress.impl;
 
 import com.lxl.compress.Compresser;
+import com.lxl.exceptions.CompressException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
@@ -25,7 +26,7 @@ public class GzipCompressImpl implements Compresser {
             if (log.isDebugEnabled()) log.debug("完成字节流的压缩---【{}】","gzip");
             return res;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new CompressException(e);
         }
     }
 
@@ -36,7 +37,7 @@ public class GzipCompressImpl implements Compresser {
             if (log.isDebugEnabled()) log.debug("完成字节流的解压缩---【{}】","gzip");
             return allBytes;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new CompressException(e);
         }
     }
 
