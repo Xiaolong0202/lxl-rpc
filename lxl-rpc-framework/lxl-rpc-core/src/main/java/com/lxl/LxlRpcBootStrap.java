@@ -7,6 +7,8 @@ import com.lxl.discovery.Registry;
 import com.lxl.discovery.RegistryConfig;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.SerializeType;
+import com.lxl.loadbalance.LoadBalancer;
+import com.lxl.loadbalance.impl.RoundLoadBalancer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -40,8 +42,10 @@ public class LxlRpcBootStrap {
 
     private Registry registry;
 
+    public static LoadBalancer LOAD_BALANCER;
+
     public static final  IdGenerator ID_GENERATOR = new IdGenerator(5,5);//id生成器
-    private int port = 8088;
+    private int port = 8080;
     public static SerializeType serializeType;
 
     public static CompressType compressType;
@@ -75,6 +79,7 @@ public class LxlRpcBootStrap {
      */
     public LxlRpcBootStrap registry(RegistryConfig registryConfig) {
         this.registry = registryConfig.getRegistry();
+        LOAD_BALANCER = new RoundLoadBalancer(registry);
         return this;
     }
 
@@ -125,6 +130,7 @@ public class LxlRpcBootStrap {
 
 
     /**
+     *
      * 启动Netty服务
      */
     public void start(){
@@ -146,7 +152,7 @@ public class LxlRpcBootStrap {
                 });
 
         try {
-            ChannelFuture channelFuture = serverBootstrap.bind(8088).sync();
+             serverBootstrap.bind(port).sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -174,6 +180,15 @@ public class LxlRpcBootStrap {
 
     public LxlRpcBootStrap compress(CompressType compressType) {
         LxlRpcBootStrap.compressType = compressType;
+        return this;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public LxlRpcBootStrap port(int port) {
+        this.port = port;
         return this;
     }
 }

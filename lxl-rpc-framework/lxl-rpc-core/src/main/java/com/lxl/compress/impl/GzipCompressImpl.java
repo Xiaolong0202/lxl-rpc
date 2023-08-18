@@ -23,7 +23,7 @@ public class GzipCompressImpl implements Compresser {
             gzipOutputStream.write(bytes);
             gzipOutputStream.finish();
             byte[] res = out.toByteArray();
-            if (log.isDebugEnabled()) log.debug("完成字节流的压缩---【{}】","gzip");
+            if (log.isDebugEnabled()) log.debug("从【{}】变为【{}】,完成字节流的压缩---【{}】",bytes.length,res.length,"gzip");
             return res;
         } catch (IOException e) {
             throw new CompressException(e);

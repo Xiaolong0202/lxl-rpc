@@ -4,6 +4,7 @@ import com.lxl.ServiceConfig;
 import com.lxl.discovery.Registry;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 public class NacosRegistry implements Registry {
     public NacosRegistry(String connectString) {
@@ -15,7 +16,7 @@ public class NacosRegistry implements Registry {
     }
 
     @Override
-    public InetSocketAddress lookup(String serviceName) {
+    public List<InetSocketAddress> lookup(String serviceName) {
         return null;
     }
 }

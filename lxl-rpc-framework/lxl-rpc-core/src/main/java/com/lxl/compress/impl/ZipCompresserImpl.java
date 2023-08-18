@@ -34,7 +34,7 @@ public class ZipCompresserImpl implements Compresser {
         } catch (Exception ex) {
             throw new CompressException(ex);
         }
-        if (log.isDebugEnabled()) log.debug("完成字节流的压缩---【{}】","zip");
+        if (log.isDebugEnabled()) log.debug("从【{}】变为【{}】,完成字节流的压缩---【{}】",bytes.length,b.length,"zip");
         return b;
     }
 

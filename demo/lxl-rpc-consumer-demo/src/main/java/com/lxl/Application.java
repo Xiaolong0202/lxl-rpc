@@ -14,13 +14,15 @@ public class Application {
                 .application("first-rpc-consumer")
                 .registry(new RegistryConfig("zookeeper://39.107.52.125:2181"))
                 .serialize(SerializeType.HESSIAN)
-                .compress(CompressType.ZIP)
+                .compress(CompressType.GZIP)
                 .reference(referenceConfig);
 
         //代理都做了什么  连接注册中心  获取服务列表  选择一个服务进行连接 发送请求（接口名，参数列表）
 
         GreetingsService greetingsService = referenceConfig.get();
-        String res = greetingsService.add(1,2);
-        System.out.println(res);
+        while (true){
+            String res = greetingsService.add(256,256);
+            System.out.println(res);
+        }
     }
 }

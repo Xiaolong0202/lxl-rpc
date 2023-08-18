@@ -4,6 +4,7 @@ package com.lxl.discovery;
 import com.lxl.ServiceConfig;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 public interface Registry {
 
@@ -19,5 +20,5 @@ public interface Registry {
      * @param serviceName
      * @return
      */
-    InetSocketAddress lookup(String serviceName);
+    List<InetSocketAddress> lookup(String serviceName);
 }

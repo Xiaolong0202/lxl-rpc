@@ -4,7 +4,6 @@ import com.lxl.LxlRpcBootStrap;
 import com.lxl.NettyClientBootStrapInitializer;
 import com.lxl.discovery.Registry;
 import com.lxl.enumnation.RequestType;
-import com.lxl.enumnation.SerializeType;
 import com.lxl.exceptions.NetWorkException;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import com.lxl.transport.message.request.RequestPayload;
@@ -44,7 +43,10 @@ public class RpcInvocationHandler implements InvocationHandler {
         System.out.println("args = " + args);
         System.out.println("hello proxy");
         //从注册中心找一个可用的服务
-        InetSocketAddress inetSocketAddress = registry.lookup(interfaceRef.getName());
+
+        //尝试使用负载均衡器来。选取一个可用的结点
+        InetSocketAddress inetSocketAddress = LxlRpcBootStrap.LOAD_BALANCER.selectServiceAddr(interfaceRef.getName());
+
         if (log.isDebugEnabled()) {
             log.debug("服务调用方，返回了服务【{}】的可用主机【{}】", interfaceRef.getName(), inetSocketAddress.getHostString());
         }
