@@ -31,12 +31,12 @@ public class LxlRpcBootStrap {
 
     Logger log = LoggerFactory.getLogger(LxlRpcBootStrap.class);
 
-    public static final Map<InetSocketAddress,Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(256);
-    public static final Map<String,ServiceConfig> SERVICE_CONFIG_CACHE = new ConcurrentHashMap<>(256);
+    public static final Map<InetSocketAddress, Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(256);
+    public static final Map<String, ServiceConfig> SERVICE_CONFIG_CACHE = new ConcurrentHashMap<>(256);
     //用于存储completableFutrue,一个completableFutrue就维护这一次远程方法调用的操作
     public static final Map<Long, CompletableFuture<Object>> COMPLETABLE_FUTURE_CACHE = new ConcurrentHashMap<>(256);
     private String applicationName = "lxlRPC-default-application";
-//    private RegistryConfig registryConfig;
+    //    private RegistryConfig registryConfig;
     private ServiceConfig serviceConfig;
     private ProtocolConfig protocolConfig;
 
@@ -44,7 +44,7 @@ public class LxlRpcBootStrap {
 
     public static LoadBalancer LOAD_BALANCER;
 
-    public static final  IdGenerator ID_GENERATOR = new IdGenerator(5,5);//id生成器
+    public static final IdGenerator ID_GENERATOR = new IdGenerator(5, 5);//id生成器
     private int port = 8080;
     public static SerializeType serializeType;
 
@@ -52,7 +52,7 @@ public class LxlRpcBootStrap {
 
     //是一个单例类
 
-    private LxlRpcBootStrap(){
+    private LxlRpcBootStrap() {
         //做一些初始化操作
     }
 
@@ -64,6 +64,7 @@ public class LxlRpcBootStrap {
 
     /**
      * 用于定义当前应用的名字
+     *
      * @param appName
      * @return
      */
@@ -74,29 +75,31 @@ public class LxlRpcBootStrap {
 
     /**
      * 用于配置注册中心,会根据url路径来返回相应的注册中心
+     *
      * @param registryConfig
      * @return
      */
     public LxlRpcBootStrap registry(RegistryConfig registryConfig) {
         this.registry = registryConfig.getRegistry();
-        LOAD_BALANCER = new RoundLoadBalancer(registry);
+        LOAD_BALANCER = new RoundLoadBalancer();
         return this;
     }
 
     /**
      * 配置当前服务序列化的协议
+     *
      * @param protocalConfig
      * @return
      */
     public LxlRpcBootStrap protocol(ProtocolConfig protocalConfig) {
         this.protocolConfig = protocalConfig;
-        if (log.isDebugEnabled()){
-            log.debug("当前工程使用了:{}协议进行序列化",protocalConfig.toString());
+        if (log.isDebugEnabled()) {
+            log.debug("当前工程使用了:{}协议进行序列化", protocalConfig.toString());
         }
         return this;
     }
 
-    public LxlRpcBootStrap serialize(SerializeType serializeType){
+    public LxlRpcBootStrap serialize(SerializeType serializeType) {
         this.serializeType = serializeType;
         return this;
     }
@@ -108,18 +111,20 @@ public class LxlRpcBootStrap {
 
     /**
      * 发布服务,将接口服务发布到注册中心当中
+     *
      * @param service
      * @return
      */
     public LxlRpcBootStrap publish(ServiceConfig<?> service) {
         //使用了抽象注册中心的概念
         registry.register(service);
-        SERVICE_CONFIG_CACHE.put(service.getInterface().getName(),service);
+        SERVICE_CONFIG_CACHE.put(service.getInterface().getName(), service);
         return this;
     }
 
     /**
      * 批量发布服务
+     *
      * @param services
      * @return
      */
@@ -130,15 +135,14 @@ public class LxlRpcBootStrap {
 
 
     /**
-     *
      * 启动Netty服务
      */
-    public void start(){
+    public void start() {
         EventLoopGroup boss = new NioEventLoopGroup();
         EventLoopGroup worker = new NioEventLoopGroup();
 
         ServerBootstrap serverBootstrap = new ServerBootstrap();
-        serverBootstrap.group(boss,worker)
+        serverBootstrap.group(boss, worker)
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -152,14 +156,12 @@ public class LxlRpcBootStrap {
                 });
 
         try {
-             serverBootstrap.bind(port).sync();
+            serverBootstrap.bind(port).sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
     }
-
-
 
 
     /**
@@ -168,7 +170,6 @@ public class LxlRpcBootStrap {
 
 
     /**
-     *
      * @param referenceConfig
      * @return
      */
@@ -190,5 +191,9 @@ public class LxlRpcBootStrap {
     public LxlRpcBootStrap port(int port) {
         this.port = port;
         return this;
+    }
+
+    public Registry getRegistry() {
+        return registry;
     }
 }
