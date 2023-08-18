@@ -1,7 +1,10 @@
 package com.lxl.channelHandler.handler;
 
+import com.lxl.compress.Compresser;
+import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.RequestType;
 import com.lxl.enumnation.SerializeType;
+import com.lxl.factory.CompressFactory;
 import com.lxl.factory.SerializerFactory;
 import com.lxl.serialize.Serializer;
 import com.lxl.transport.message.request.LxlRpcRequest;
@@ -35,7 +38,12 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
     protected void encode(ChannelHandlerContext ctx, LxlRpcRequest msg, ByteBuf out) throws Exception {
         //获取序列化器
         Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(msg.getSerializableType()));
+        //序列化
         byte[] payLoadBytes = serializer.serialize(msg.getRequestPayload());
+        //获取压缩器
+        Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(msg.getCompressType()));
+        //压缩
+        payLoadBytes = compresser.compress(payLoadBytes);
         long fullLength = MessageEncoderConstant.REQUEST_HEAD_LENGTH + payLoadBytes.length;
         //请求头
         out.writeBytes(MessageEncoderConstant.MAGIC_NUM);

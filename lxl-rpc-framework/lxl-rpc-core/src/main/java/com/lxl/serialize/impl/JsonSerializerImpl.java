@@ -6,10 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
+ * JSON的序列化，但是不能反序列化Class对象
  * @Author LiuXiaolong
  * @Description lxl-rpc
  * @DateTime 2023/8/17  23:37
  **/
+@Deprecated
 @Slf4j
 public class JsonSerializerImpl implements Serializer {
 

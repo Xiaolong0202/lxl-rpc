@@ -1,8 +1,11 @@
 package com.lxl.channelHandler.handler;
 
+import com.lxl.compress.Compresser;
+import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.RequestType;
 import com.lxl.enumnation.SerializeType;
 import com.lxl.exceptions.NetWorkException;
+import com.lxl.factory.CompressFactory;
 import com.lxl.factory.SerializerFactory;
 import com.lxl.serialize.Serializer;
 import com.lxl.transport.message.request.LxlRpcRequest;
@@ -50,7 +53,6 @@ public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         short headLen = byteBuf.readShort();
         //解析总长度
         long fullLen = byteBuf.readLong();
-
         //序列化的类型
         byte serializeType = byteBuf.readByte();
         //压缩的类型
@@ -63,10 +65,17 @@ public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         int payLoadLen = (int) (fullLen - headLen);
         byte [] requestBody = new byte[payLoadLen];
         byteBuf.readBytes(requestBody);
+
+        //获取序列化器
+        Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(compressType));
+        //反序列化
+        requestBody = compresser.decompress(requestBody);
+
         //将请求体反序列化  心跳请求没有请求体
         RequestPayload requestPayload = null;
         //获取序列化器
         Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(serializeType));
+        //反序列化
         if (requestType == RequestType.REQUEST.ID) {
              requestPayload =  serializer.disSerializer(requestBody,RequestPayload.class);
         }

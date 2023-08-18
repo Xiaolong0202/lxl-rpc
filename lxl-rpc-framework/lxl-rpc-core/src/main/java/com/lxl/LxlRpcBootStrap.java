@@ -5,6 +5,7 @@ import com.lxl.channelHandler.handler.RpcRequestDecoder;
 import com.lxl.channelHandler.handler.RpcResponseToByteEncoder;
 import com.lxl.discovery.Registry;
 import com.lxl.discovery.RegistryConfig;
+import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.SerializeType;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -25,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class LxlRpcBootStrap {
 
+
     Logger log = LoggerFactory.getLogger(LxlRpcBootStrap.class);
 
     public static final Map<InetSocketAddress,Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(256);
@@ -42,6 +44,7 @@ public class LxlRpcBootStrap {
     private int port = 8088;
     public static SerializeType serializeType;
 
+    public static CompressType compressType;
 
     //是一个单例类
 
@@ -166,6 +169,11 @@ public class LxlRpcBootStrap {
     public LxlRpcBootStrap reference(ReferenceConfig<?> referenceConfig) {
         //在这个方法当中获取对应的配置项，用来配置reference,将来使用get方法的时候就可以获取代理对象
         referenceConfig.setRegistry(registry);
+        return this;
+    }
+
+    public LxlRpcBootStrap compress(CompressType compressType) {
+        LxlRpcBootStrap.compressType = compressType;
         return this;
     }
 }

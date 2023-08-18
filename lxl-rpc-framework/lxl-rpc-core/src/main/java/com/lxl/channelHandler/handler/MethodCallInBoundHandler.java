@@ -29,7 +29,7 @@ public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpc
 
         //封装响应
         LxlRpcResponse response = LxlRpcResponse.builder()
-                .compressType((byte) 1)
+                .compressType(msg.getCompressType())
                 .serializableType(msg.getSerializableType())
                 .code(ResponseType.SUCCESS.CODE)
                 .object(res)

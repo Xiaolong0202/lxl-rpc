@@ -10,6 +10,6 @@ public class MySimpleChannelInboundHandler extends SimpleChannelInboundHandler<L
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, LxlRpcResponse msg) throws Exception {
         String res = msg.toString();
-        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(1L).complete(res);
+        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(msg.getRequestId()).complete(res);
     }
 }

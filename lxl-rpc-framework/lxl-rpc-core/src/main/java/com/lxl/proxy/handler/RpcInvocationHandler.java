@@ -40,7 +40,6 @@ public class RpcInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-//                System.out.println("proxy = " + proxy);
         System.out.println("method = " + method);
         System.out.println("args = " + args);
         System.out.println("hello proxy");
@@ -53,10 +52,11 @@ public class RpcInvocationHandler implements InvocationHandler {
         //----------------------封装报文
         //首先构建请求类
         RequestPayload payload = new RequestPayload(interfaceRef.getName(), method.getName(), method.getParameterTypes(), args, method.getReturnType());
-        //TODO 对各种请求与id做处理
+
+        long requestId = LxlRpcBootStrap.ID_GENERATOR.getId();
         LxlRpcRequest rpcRequest = LxlRpcRequest.builder()
-                .requestId(LxlRpcBootStrap.ID_GENERATOR.getId())
-                .compressType((byte) 1)
+                .requestId(requestId)
+                .compressType(LxlRpcBootStrap.compressType.ID)
                 .serializableType(LxlRpcBootStrap.serializeType.ID)
                 .requestType(RequestType.REQUEST.ID)
                 .requestPayload(payload)
@@ -65,8 +65,8 @@ public class RpcInvocationHandler implements InvocationHandler {
         //使用netty连接服务器 发送服务的名字+方法的名字+参数列表,得到结果
         Channel channel = this.getAvaliableChanel(inetSocketAddress);
 
-        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(1L, new CompletableFuture<>());
-        CompletableFuture<Object> objectCompletableFuture = LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(1L);
+        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(requestId, new CompletableFuture<>());
+        CompletableFuture<Object> objectCompletableFuture = LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(requestId);
         //发送消息,请求
         ChannelFuture channelFuture = channel.writeAndFlush(rpcRequest);
         //添加监听器

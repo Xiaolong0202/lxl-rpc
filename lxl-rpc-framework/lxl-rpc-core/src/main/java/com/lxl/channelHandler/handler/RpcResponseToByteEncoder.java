@@ -1,7 +1,10 @@
 package com.lxl.channelHandler.handler;
 
+import com.lxl.compress.Compresser;
+import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.ResponseType;
 import com.lxl.enumnation.SerializeType;
+import com.lxl.factory.CompressFactory;
 import com.lxl.factory.SerializerFactory;
 import com.lxl.serialize.Serializer;
 import com.lxl.transport.message.response.LxlRpcResponse;
@@ -38,6 +41,10 @@ public class RpcResponseToByteEncoder extends MessageToByteEncoder<LxlRpcRespons
     protected void encode(ChannelHandlerContext ctx, LxlRpcResponse msg, ByteBuf out) throws Exception {
         Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(msg.getSerializableType()));
         byte[] responseBody = serializer.serialize(msg.getObject());
+        //获取压缩器
+        Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(msg.getCompressType()));
+        //压缩
+        responseBody = compresser.compress(responseBody);
         out.writeBytes(MessageEncoderConstant.MAGIC_NUM);
         out.writeByte(MessageEncoderConstant.VERSION);
         out.writeShort(MessageEncoderConstant.RESPONSE_HEAD_LENGTH);
