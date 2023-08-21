@@ -8,7 +8,9 @@ import com.lxl.discovery.RegistryConfig;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.SerializeType;
 import com.lxl.loadbalance.LoadBalancer;
+import com.lxl.loadbalance.impl.ConsistentLoadBalancer;
 import com.lxl.loadbalance.impl.RoundLoadBalancer;
+import com.lxl.transport.message.request.LxlRpcRequest;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -35,6 +37,8 @@ public class LxlRpcBootStrap {
     public static final Map<String, ServiceConfig> SERVICE_CONFIG_CACHE = new ConcurrentHashMap<>(256);
     //用于存储completableFutrue,一个completableFutrue就维护这一次远程方法调用的操作
     public static final Map<Long, CompletableFuture<Object>> COMPLETABLE_FUTURE_CACHE = new ConcurrentHashMap<>(256);
+    //用于存放方法调用时候的请求
+    public static final ThreadLocal<LxlRpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
     private String applicationName = "lxlRPC-default-application";
     //    private RegistryConfig registryConfig;
     private ServiceConfig serviceConfig;
@@ -81,7 +85,7 @@ public class LxlRpcBootStrap {
      */
     public LxlRpcBootStrap registry(RegistryConfig registryConfig) {
         this.registry = registryConfig.getRegistry();
-        LOAD_BALANCER = new RoundLoadBalancer();
+        LOAD_BALANCER = new ConsistentLoadBalancer();
         return this;
     }
 

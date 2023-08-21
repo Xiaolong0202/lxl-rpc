@@ -39,17 +39,6 @@ public class RpcInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        System.out.println("method = " + method);
-        System.out.println("args = " + args);
-        System.out.println("hello proxy");
-        //从注册中心找一个可用的服务
-
-        //尝试使用负载均衡器来。选取一个可用的结点
-        InetSocketAddress inetSocketAddress = LxlRpcBootStrap.LOAD_BALANCER.selectServiceAddr(interfaceRef.getName());
-
-        if (log.isDebugEnabled()) {
-            log.debug("服务调用方，返回了服务【{}】的可用主机【{}】", interfaceRef.getName(), inetSocketAddress.getHostString());
-        }
 
         //----------------------封装报文
         //首先构建请求类
@@ -63,6 +52,19 @@ public class RpcInvocationHandler implements InvocationHandler {
                 .requestType(RequestType.REQUEST.ID)
                 .requestPayload(payload)
                 .build();
+        //存储本地线程，在合适的时候remove
+        LxlRpcBootStrap.REQUEST_THREAD_LOCAL.set(rpcRequest);
+
+        //从注册中心找一个可用的服务
+
+        //尝试使用负载均衡器来。选取一个可用的结点
+        InetSocketAddress inetSocketAddress = LxlRpcBootStrap.LOAD_BALANCER.selectServiceAddr(interfaceRef.getName());
+        System.out.println("inetSocketAddress = 选择的结点：：：：：：：：：：：：：：：：：：：：：：：" + inetSocketAddress);
+
+        if (log.isDebugEnabled()) {
+            log.debug("服务调用方，返回了服务【{}】的可用主机【{}】", interfaceRef.getName(), inetSocketAddress.getHostString());
+        }
+
 
         //使用netty连接服务器 发送服务的名字+方法的名字+参数列表,得到结果
         Channel channel = this.getAvaliableChanel(inetSocketAddress);
@@ -78,6 +80,11 @@ public class RpcInvocationHandler implements InvocationHandler {
                 objectCompletableFuture.completeExceptionally(future.cause());
             }
         });
+
+        //清理ThreadLocal
+
+
+
         return objectCompletableFuture.get(3, TimeUnit.SECONDS);//如果返回时间超过三秒则视为相应失败
     }
 

@@ -1,11 +1,7 @@
 package com.lxl;
 
 import com.lxl.discovery.RegistryConfig;
-import com.lxl.enumnation.SerializeType;
 import com.lxl.impl.GreetingsServiceImpl;
-
-import java.sql.Time;
-import java.util.concurrent.TimeUnit;
 
 public class Application {
     public static void main(String[] args) {
@@ -22,7 +18,7 @@ public class Application {
                 .application("first-rpc-provider")
                 .registry(new RegistryConfig("zookeeper://39.107.52.125:2181"))
                 .protocol(new ProtocolConfig("jdk"))
-                .port(8082)
+                .port(3336)
                 .publish(service)//发布服务;
                 .start();
 //        try {
