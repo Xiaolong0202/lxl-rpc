@@ -1,12 +1,15 @@
 package com.lxl.core;
 
 import com.lxl.LxlRpcBootStrap;
+import com.lxl.NettyClientBootStrapInitializer;
 import com.lxl.enumnation.RequestType;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
@@ -25,7 +28,21 @@ public class HeartBeatDetector {
     /**
      * 拉取服务列表并进行连接
      */
-    public static void detectorHeartBeat() {
+    public static void detectorHeartBeat(String serviceName) {
+
+        List<InetSocketAddress> inetSocketAddressList = LxlRpcBootStrap.getInstance().getRegistry().lookup(serviceName);
+        inetSocketAddressList.forEach(inetSocketAddress -> {
+            if (!LxlRpcBootStrap.CHANNEL_CACHE.containsKey(inetSocketAddress)){
+                try {
+                    ChannelFuture channelFuture = NettyClientBootStrapInitializer.getBootstrap().connect(inetSocketAddress).sync();
+                    LxlRpcBootStrap.CHANNEL_CACHE.put(inetSocketAddress, channelFuture.channel());
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+
         Thread thread = new Thread(() -> {
             new Timer().schedule(new TimerTask() {
                 @Override
@@ -56,7 +73,7 @@ public class HeartBeatDetector {
                             if (log.isDebugEnabled()) {
                                 log.debug("服务器【{}】的心跳响应时间为 {}", inetSocketAddress.toString(), responeseTime);
                             }
-                            LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.put(responeseTime,channel);
+                            LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.put(responeseTime,inetSocketAddress);
                         } catch (InterruptedException | ExecutionException | TimeoutException e) {
                             throw new RuntimeException(e);
                         }

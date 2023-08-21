@@ -27,6 +27,5 @@ public class Application {
 //        }
 
 
-        HeartBeatDetector.detectorHeartBeat();
     }
 }

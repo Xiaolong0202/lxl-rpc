@@ -18,7 +18,7 @@ public class Application {
                 .application("first-rpc-provider")
                 .registry(new RegistryConfig("zookeeper://39.107.52.125:2181"))
                 .protocol(new ProtocolConfig("jdk"))
-                .port(3338)
+                .port(3340)
                 .publish(service)//发布服务;
                 .start();
 //        try {

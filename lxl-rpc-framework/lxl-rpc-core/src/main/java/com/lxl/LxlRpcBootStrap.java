@@ -3,12 +3,14 @@ package com.lxl;
 import com.lxl.channelHandler.handler.MethodCallInBoundHandler;
 import com.lxl.channelHandler.handler.RpcRequestDecoder;
 import com.lxl.channelHandler.handler.RpcResponseToByteEncoder;
+import com.lxl.core.HeartBeatDetector;
 import com.lxl.discovery.Registry;
 import com.lxl.discovery.RegistryConfig;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.SerializeType;
 import com.lxl.loadbalance.LoadBalancer;
 import com.lxl.loadbalance.impl.ConsistentLoadBalancer;
+import com.lxl.loadbalance.impl.MinimumResponseTimeBalancer;
 import com.lxl.loadbalance.impl.RoundLoadBalancer;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import io.netty.bootstrap.ServerBootstrap;
@@ -37,7 +39,7 @@ public class LxlRpcBootStrap {
     //用于存储completableFutrue,一个completableFutrue就维护这一次远程方法调用的操作
     public static final Map<Long, CompletableFuture<Object>> COMPLETABLE_FUTURE_CACHE = new ConcurrentHashMap<>(256);
 
-    public static final SortedMap<Long,Channel> RESPONSE_TIME_CHANNEL_CACHE = Collections.synchronizedSortedMap(new TreeMap<>());
+    public static final SortedMap<Long,InetSocketAddress> RESPONSE_TIME_CHANNEL_CACHE = Collections.synchronizedSortedMap(new TreeMap<>());
 
     //用于存放方法调用时候的请求
     public static final ThreadLocal<LxlRpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
@@ -87,7 +89,7 @@ public class LxlRpcBootStrap {
      */
     public LxlRpcBootStrap registry(RegistryConfig registryConfig) {
         this.registry = registryConfig.getRegistry();
-        LOAD_BALANCER = new ConsistentLoadBalancer();
+        LOAD_BALANCER = new MinimumResponseTimeBalancer();
         return this;
     }
 
@@ -182,6 +184,7 @@ public class LxlRpcBootStrap {
     public LxlRpcBootStrap reference(ReferenceConfig<?> referenceConfig) {
         //在这个方法当中获取对应的配置项，用来配置reference,将来使用get方法的时候就可以获取代理对象
         referenceConfig.setRegistry(registry);
+        HeartBeatDetector.detectorHeartBeat(referenceConfig.getInterface().getName());
         return this;
     }
 
