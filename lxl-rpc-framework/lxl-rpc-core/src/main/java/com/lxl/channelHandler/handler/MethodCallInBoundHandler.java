@@ -33,6 +33,7 @@ public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpc
                 .serializableType(msg.getSerializableType())
                 .code(ResponseType.SUCCESS.CODE)
                 .object(res)
+                .timeStamp(System.currentTimeMillis())
                 .requestId(msg.getRequestId())
                 .build();
         if (log.isDebugEnabled()){

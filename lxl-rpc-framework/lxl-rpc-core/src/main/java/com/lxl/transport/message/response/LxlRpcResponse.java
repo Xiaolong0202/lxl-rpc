@@ -19,6 +19,7 @@ public class LxlRpcResponse {
     private long requestId;
     private byte compressType;
     private byte serializableType;
+    private long timeStamp;
     //
     private byte code;
     //响应的内容

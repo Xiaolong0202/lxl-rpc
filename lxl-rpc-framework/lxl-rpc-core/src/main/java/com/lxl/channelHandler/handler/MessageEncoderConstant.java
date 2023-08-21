@@ -10,8 +10,8 @@ import java.nio.charset.StandardCharsets;
 public interface MessageEncoderConstant {
     public static final byte[] MAGIC_NUM =  "lxlRpc".getBytes(StandardCharsets.UTF_8);
     public static final byte VERSION = 1;
-    public static final short REQUEST_HEAD_LENGTH = 28;
-    public static final  int RESPONSE_HEAD_LENGTH = 28;
+    public static final short REQUEST_HEAD_LENGTH = 36;
+    public static final  int RESPONSE_HEAD_LENGTH = 36;
     public static final int VERSION_LENGTH = 1;
     public static final int REQUEST_LENGTH_FIELD_OFFSET = MAGIC_NUM.length+VERSION_LENGTH+Short.SIZE/8;//
     public static final int RESPONSE_LENGTH_FIELD_OFFSET = MAGIC_NUM.length+VERSION_LENGTH+Short.SIZE/8;

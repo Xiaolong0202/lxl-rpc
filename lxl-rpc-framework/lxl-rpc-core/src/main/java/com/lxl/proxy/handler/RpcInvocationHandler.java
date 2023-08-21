@@ -50,6 +50,7 @@ public class RpcInvocationHandler implements InvocationHandler {
                 .compressType(LxlRpcBootStrap.compressType.ID)
                 .serializableType(LxlRpcBootStrap.serializeType.ID)
                 .requestType(RequestType.REQUEST.ID)
+                .timeStamp(System.currentTimeMillis())
                 .requestPayload(payload)
                 .build();
         //存储本地线程，在合适的时候remove

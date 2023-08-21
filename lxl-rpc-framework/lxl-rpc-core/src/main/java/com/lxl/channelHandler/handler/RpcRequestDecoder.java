@@ -16,6 +16,7 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.util.Date;
 
 /**
  * @Author LiuXiaolong
@@ -61,6 +62,8 @@ public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         byte requestType = byteBuf.readByte();
         //请求的id
         long requestId = byteBuf.readLong();
+        //时间戳
+        long timeStamp = byteBuf.readLong();
         //请求体
         int payLoadLen = (int) (fullLen - headLen);
         byte [] requestBody = new byte[payLoadLen];
@@ -86,10 +89,11 @@ public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         request.setRequestType(requestType);
         request.setCompressType(compressType);
         request.setSerializableType(serializeType);
+        request.setTimeStamp(timeStamp);
         request.setRequestPayload(requestPayload);
 
         if (log.isDebugEnabled()){
-            log.debug("请求【{}】，在服务端已经完成解码,并封装成了对应的请求实体类",requestId);
+            log.debug("请求【{}】，在服务端已经完成解码,并封装成了对应的请求实体类--时间【{}】",requestId,new Date(timeStamp));
         }
         return request;
     }

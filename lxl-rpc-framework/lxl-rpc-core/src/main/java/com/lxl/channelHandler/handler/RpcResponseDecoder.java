@@ -60,6 +60,8 @@ public class RpcResponseDecoder extends LengthFieldBasedFrameDecoder {
         byte serializeType = in.readByte();
         //压缩的类型
         byte compressType = in.readByte();
+        //时间戳
+        long timeStamp = in.readLong();
         //响应码
         byte responseCode = in.readByte();
         //请求的id
@@ -82,6 +84,7 @@ public class RpcResponseDecoder extends LengthFieldBasedFrameDecoder {
                 .code(responseCode)
                 .serializableType(serializeType)
                 .compressType(compressType)
+                .timeStamp(timeStamp)
                 .requestId(requestId)
                 .build();
 

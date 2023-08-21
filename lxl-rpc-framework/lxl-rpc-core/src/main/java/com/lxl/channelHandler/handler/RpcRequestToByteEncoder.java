@@ -54,6 +54,7 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
         out.writeByte(msg.getCompressType());
         out.writeByte(msg.getRequestType());
         out.writeLong(msg.getRequestId());
+        out.writeLong(msg.getTimeStamp());
         if (msg.getRequestType() == RequestType.HEART_BEAT.ID)return;//如果是心跳请求，则可以直接返回，因为没有请求体
         //请求体
         out.writeBytes(payLoadBytes);

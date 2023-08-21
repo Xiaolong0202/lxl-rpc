@@ -19,6 +19,7 @@ public class LxlRpcRequest implements Serializable {
     private byte requestType;
     private byte compressType;
     private byte serializableType;
+    private long timeStamp;
 
     //消息负载
     private RequestPayload requestPayload;

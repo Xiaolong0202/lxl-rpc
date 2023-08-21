@@ -51,6 +51,7 @@ public class RpcResponseToByteEncoder extends MessageToByteEncoder<LxlRpcRespons
         out.writeLong(MessageEncoderConstant.RESPONSE_HEAD_LENGTH+responseBody.length);
         out.writeByte(msg.getSerializableType());
         out.writeByte(msg.getCompressType());
+        out.writeLong(msg.getTimeStamp());
         out.writeByte(msg.getCode());
         out.writeLong(msg.getRequestId());
         out.writeBytes(responseBody);
