@@ -9,7 +9,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 public class MySimpleChannelInboundHandler extends SimpleChannelInboundHandler<LxlRpcResponse>  {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, LxlRpcResponse msg) throws Exception {
-        String res = msg.toString();
-        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(msg.getRequestId()).complete(res);
+        String res = msg.getObject().toString();
+        long requestId = msg.getRequestId();
+        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(requestId).complete(res);
     }
 }

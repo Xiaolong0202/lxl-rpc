@@ -36,14 +36,17 @@ import java.io.*;
 public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest> {
     @Override
     protected void encode(ChannelHandlerContext ctx, LxlRpcRequest msg, ByteBuf out) throws Exception {
-        //获取序列化器
-        Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(msg.getSerializableType()));
-        //序列化
-        byte[] payLoadBytes = serializer.serialize(msg.getRequestPayload());
-        //获取压缩器
-        Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(msg.getCompressType()));
-        //压缩
-        payLoadBytes = compresser.compress(payLoadBytes);
+        byte[] payLoadBytes = new byte[0];
+        if (msg.getRequestPayload() != null){
+            //获取序列化器
+            Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(msg.getSerializableType()));
+            //序列化
+            payLoadBytes = serializer.serialize(msg.getRequestPayload());
+            //获取压缩器
+            Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(msg.getCompressType()));
+            //压缩
+            payLoadBytes = compresser.compress(payLoadBytes);
+        }
         long fullLength = MessageEncoderConstant.REQUEST_HEAD_LENGTH + payLoadBytes.length;
         //请求头
         out.writeBytes(MessageEncoderConstant.MAGIC_NUM);

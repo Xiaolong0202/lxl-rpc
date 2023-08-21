@@ -69,15 +69,18 @@ public class RpcResponseDecoder extends LengthFieldBasedFrameDecoder {
         //请求体
         byte[] objectBytes = new byte[(int) (fullLen - headLen)];
         in.readBytes(objectBytes);
+        System.out.println(objectBytes.length);
+        Object bodyObject = null;
+       if (objectBytes.length > 0){
+           //获取压缩器
+           Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(compressType));
+           //解压缩
+           objectBytes = compresser.decompress(objectBytes);
 
-        //获取压缩器
-        Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(compressType));
-        //解压缩
-        objectBytes = compresser.decompress(objectBytes);
-
-        //反序列化
-        Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(serializeType));
-        Object bodyObject = serializer.disSerializer(objectBytes,Object.class);
+           //反序列化
+           Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(serializeType));
+           bodyObject = serializer.disSerializer(objectBytes,Object.class);
+       }
 
         //封装响应
         LxlRpcResponse response = LxlRpcResponse.builder().object(bodyObject)

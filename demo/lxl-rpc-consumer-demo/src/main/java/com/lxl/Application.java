@@ -1,5 +1,6 @@
 package com.lxl;
 
+import com.lxl.core.HeartBeatDetector;
 import com.lxl.discovery.RegistryConfig;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.SerializeType;
@@ -20,9 +21,12 @@ public class Application {
         //代理都做了什么  连接注册中心  获取服务列表  选择一个服务进行连接 发送请求（接口名，参数列表）
 
         GreetingsService greetingsService = referenceConfig.get();
-//        while (true){
+//        for (int i = 0; i < 10; i++) {
             String res = greetingsService.add(256,256);
             System.out.println(res);
 //        }
+
+
+        HeartBeatDetector.detectorHeartBeat();
     }
 }

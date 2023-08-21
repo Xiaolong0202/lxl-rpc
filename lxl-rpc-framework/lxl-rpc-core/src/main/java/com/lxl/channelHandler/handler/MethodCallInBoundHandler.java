@@ -3,7 +3,6 @@ package com.lxl.channelHandler.handler;
 import com.lxl.LxlRpcBootStrap;
 import com.lxl.ServiceConfig;
 import com.lxl.enumnation.ResponseType;
-import com.lxl.enumnation.SerializeType;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import com.lxl.transport.message.request.RequestPayload;
 import com.lxl.transport.message.response.LxlRpcResponse;
@@ -25,7 +24,7 @@ public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpc
     protected void channelRead0(ChannelHandlerContext ctx, LxlRpcRequest msg) throws Exception {
         RequestPayload payload = msg.getRequestPayload();
         long requestId = msg.getRequestId();
-        Object res = invokeMethod(payload, requestId);//根据请求体调用方法
+        Object res = invokeMethod(payload);//根据请求体调用方法
 
         //封装响应
         LxlRpcResponse response = LxlRpcResponse.builder()
@@ -38,13 +37,15 @@ public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpc
                 .build();
         if (log.isDebugEnabled()){
             log.debug("服务端响应封装完成");
+            System.out.println("response = " + response);
         }
         //写出响应
         ctx.channel().writeAndFlush(response);
     }
 
     //使用反射去调用方法,服务的方法
-    private Object invokeMethod(RequestPayload payload, long requestId) {
+    private Object invokeMethod(RequestPayload payload) {
+        if (payload == null)return new Object();
         try {
             //从缓存当中获取对应的serviceConfig
             ServiceConfig serviceConfig = LxlRpcBootStrap.SERVICE_CONFIG_CACHE.get(payload.getInterfaceName());

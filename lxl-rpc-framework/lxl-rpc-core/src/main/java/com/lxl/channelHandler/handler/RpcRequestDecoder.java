@@ -64,25 +64,27 @@ public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         long requestId = byteBuf.readLong();
         //时间戳
         long timeStamp = byteBuf.readLong();
-        //请求体
-        int payLoadLen = (int) (fullLen - headLen);
-        byte [] requestBody = new byte[payLoadLen];
-        byteBuf.readBytes(requestBody);
 
-        //获取序列化器
-        Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(compressType));
-        //反序列化
-        requestBody = compresser.decompress(requestBody);
+        log.debug("接受到请求，请求类型为【{}】",requestType);
 
-        //将请求体反序列化  心跳请求没有请求体
+        ///将请求体反序列化  心跳请求没有请求体
         RequestPayload requestPayload = null;
-        //获取序列化器
-        Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(serializeType));
-        //反序列化
         if (requestType == RequestType.REQUEST.ID) {
-             requestPayload =  serializer.disSerializer(requestBody,RequestPayload.class);
-        }
+            //请求体
+            int payLoadLen = (int) (fullLen - headLen);
+            byte[] requestBody = new byte[payLoadLen];
+            byteBuf.readBytes(requestBody);
 
+            //获取压缩器
+            Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(compressType));
+            //解压
+            requestBody = compresser.decompress(requestBody);
+
+            //获取序列化器
+            Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(serializeType));
+            //反序列化
+            requestPayload = serializer.disSerializer(requestBody, RequestPayload.class);
+        }
         //得到请求
         LxlRpcRequest request = new LxlRpcRequest();
         request.setRequestId(requestId);
