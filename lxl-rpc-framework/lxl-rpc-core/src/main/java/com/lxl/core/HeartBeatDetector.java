@@ -92,6 +92,7 @@ public class HeartBeatDetector {
                                 } catch (InterruptedException ex) {
                                     throw new RuntimeException(ex);
                                 }
+                                continue;
                             }
                         }
                     });

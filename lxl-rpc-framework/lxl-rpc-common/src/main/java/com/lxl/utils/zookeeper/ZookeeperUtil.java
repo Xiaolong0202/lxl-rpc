@@ -85,7 +85,7 @@ public class ZookeeperUtil {
     public static List<String> getChildren(ZooKeeper zooKeeper,String serviceNode, Watcher watcher) {
         List<String> children;
         try {
-            children = zooKeeper.getChildren(serviceNode, null);
+            children = zooKeeper.getChildren(serviceNode, watcher);
         } catch (KeeperException | InterruptedException e) {
             log.error("获取结点【{}】的子节点时发生异常",serviceNode);
             throw new RuntimeException(e);

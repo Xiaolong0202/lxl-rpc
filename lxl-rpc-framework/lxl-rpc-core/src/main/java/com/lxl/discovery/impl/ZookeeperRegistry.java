@@ -4,12 +4,15 @@ import com.lxl.Constant;
 import com.lxl.LxlRpcBootStrap;
 import com.lxl.ServiceConfig;
 import com.lxl.discovery.AbstractRegistry;
+import com.lxl.discovery.wathcer.UpAndDownWatcher;
 import com.lxl.exceptions.DiscoveryException;
 import com.lxl.utils.net.NetUtil;
 import com.lxl.utils.zookeeper.ZookeeperNode;
 import com.lxl.utils.zookeeper.ZookeeperUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.net.InetSocketAddress;
@@ -39,7 +42,6 @@ public class ZookeeperRegistry extends AbstractRegistry {
         //ip我们使用的是局域网ip
         String ipAddr =  NetUtil.getLocalHostExactAddress();
         if (log.isDebugEnabled())log.debug("局域网ip地址:"+ipAddr);
-        //TODO  后续处理端口的问题
         String node = parentNode+'/'+ipAddr+':'+ LxlRpcBootStrap.getInstance().getPort();
         ZookeeperUtil.createZookeeperNode(zooKeeper,new ZookeeperNode(node,null),null,CreateMode.EPHEMERAL);//创建一个临时的结点
     }
@@ -55,7 +57,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
         //找到对应的结点
         String serviceNode = Constant.BASE_PROVIDER+'/'+serviceName;
         //从zk中获取它的子节点
-        List<String> children = ZookeeperUtil.getChildren(zooKeeper,serviceNode,null);
+        List<String> children = ZookeeperUtil.getChildren(zooKeeper, serviceNode,new UpAndDownWatcher());
         //将其封装成InetSocketAddress
         List<InetSocketAddress> inetSocketAddressList = children.stream().map(ipAndPort -> {
             String[] split = ipAndPort.split(":");
