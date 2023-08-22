@@ -44,11 +44,11 @@ public class RpcInvocationHandler implements InvocationHandler {
         //首先构建请求类
         RequestPayload payload = new RequestPayload(interfaceRef.getName(), method.getName(), method.getParameterTypes(), args, method.getReturnType());
 
-        long requestId = LxlRpcBootStrap.ID_GENERATOR.getId();
+        long requestId = LxlRpcBootStrap.getInstance().getConfiguration().getID_GENERATOR().getId();
         LxlRpcRequest rpcRequest = LxlRpcRequest.builder()
                 .requestId(requestId)
-                .compressType(LxlRpcBootStrap.compressType.ID)
-                .serializableType(LxlRpcBootStrap.serializeType.ID)
+                .compressType(LxlRpcBootStrap.getInstance().getConfiguration().getCompressType().ID)
+                .serializableType(LxlRpcBootStrap.getInstance().getConfiguration().getSerializeType().ID)
                 .requestType(RequestType.REQUEST.ID)
                 .timeStamp(System.currentTimeMillis())
                 .requestPayload(payload)
@@ -59,7 +59,7 @@ public class RpcInvocationHandler implements InvocationHandler {
         //从注册中心找一个可用的服务
 
         //尝试使用负载均衡器来。选取一个可用的结点
-        InetSocketAddress inetSocketAddress = LxlRpcBootStrap.LOAD_BALANCER.selectServiceAddr(interfaceRef.getName());
+        InetSocketAddress inetSocketAddress = LxlRpcBootStrap.getInstance().getConfiguration().getLoadBalancer().selectServiceAddr(interfaceRef.getName());
         System.out.println("inetSocketAddress = 选择的结点：：：：：：：：：：：：：：：：：：：：：：：" + inetSocketAddress);
 
         if (log.isDebugEnabled()) {

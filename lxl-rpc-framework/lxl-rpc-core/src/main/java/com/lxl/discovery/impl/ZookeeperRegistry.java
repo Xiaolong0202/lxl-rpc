@@ -42,7 +42,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
         //ip我们使用的是局域网ip
         String ipAddr =  NetUtil.getLocalHostExactAddress();
         if (log.isDebugEnabled())log.debug("局域网ip地址:"+ipAddr);
-        String node = parentNode+'/'+ipAddr+':'+ LxlRpcBootStrap.getInstance().getPort();
+        String node = parentNode+'/'+ipAddr+':'+ LxlRpcBootStrap.getInstance().getConfiguration().getPORT();
         ZookeeperUtil.createZookeeperNode(zooKeeper,new ZookeeperNode(node,null),null,CreateMode.EPHEMERAL);//创建一个临时的结点
     }
 

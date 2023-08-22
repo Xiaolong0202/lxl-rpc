@@ -19,11 +19,11 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.URL;
@@ -32,40 +32,29 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 
-
+/**
+ * 启动引导
+ */
+@Slf4j
 public class LxlRpcBootStrap {
-
-
-    Logger log = LoggerFactory.getLogger(LxlRpcBootStrap.class);
-
+    //维护一个全局的配置中心
+    private Configuration configuration;
+    private Registry registry;
     public static final Map<InetSocketAddress, Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(256);
     public static final Map<String, ServiceConfig> SERVICE_CONFIG_CACHE = new ConcurrentHashMap<>(256);
     //用于存储completableFutrue,一个completableFutrue就维护这一次远程方法调用的操作
     public static final Map<Long, CompletableFuture<Object>> COMPLETABLE_FUTURE_CACHE = new ConcurrentHashMap<>(256);
-
+    //存储响应时间与ip地址的键值对，并且按照响应时间来排序
     public static final SortedMap<Long, InetSocketAddress> RESPONSE_TIME_CHANNEL_CACHE = Collections.synchronizedSortedMap(new TreeMap<>());
 
     //用于存放方法调用时候的请求
     public static final ThreadLocal<LxlRpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
-    private String applicationName = "lxlRPC-default-application";
-    //    private RegistryConfig registryConfig;
-    private ServiceConfig serviceConfig;
-    private ProtocolConfig protocolConfig;
 
-    private Registry registry;
-
-    public static LoadBalancer LOAD_BALANCER;
-
-    public static final IdGenerator ID_GENERATOR = new IdGenerator(5, 5);//id生成器
-    private int port = 8080;
-    public static SerializeType serializeType;
-
-    public static CompressType compressType;
 
     //是一个单例类
-
     private LxlRpcBootStrap() {
         //做一些初始化操作
+        this.configuration = new Configuration();
     }
 
     private static LxlRpcBootStrap instance = new LxlRpcBootStrap();
@@ -81,7 +70,7 @@ public class LxlRpcBootStrap {
      * @return
      */
     public LxlRpcBootStrap application(String appName) {
-        this.applicationName = appName;
+        this.configuration.setAppName(appName);
         return this;
     }
 
@@ -92,10 +81,22 @@ public class LxlRpcBootStrap {
      * @return
      */
     public LxlRpcBootStrap registry(RegistryConfig registryConfig) {
-        this.registry = registryConfig.getRegistry();
-        LOAD_BALANCER = new RoundLoadBalancer();
+        this.configuration.setRegistryConfig(registryConfig);
+        this.registry = configuration.getRegistryConfig().getRegistry();
         return this;
     }
+
+
+    /**
+     * 配置负载均衡策略
+     * @param loadBalancer
+     * @return
+     */
+    public LxlRpcBootStrap loadBalancer(LoadBalancer loadBalancer){
+        this.configuration.setLoadBalancer(loadBalancer);
+        return this;
+    }
+
 
     /**
      * 配置当前服务序列化的协议
@@ -104,7 +105,7 @@ public class LxlRpcBootStrap {
      * @return
      */
     public LxlRpcBootStrap protocol(ProtocolConfig protocalConfig) {
-        this.protocolConfig = protocalConfig;
+        this.configuration.setProtocolConfig(protocalConfig);
         if (log.isDebugEnabled()) {
             log.debug("当前工程使用了:{}协议进行序列化", protocalConfig.toString());
         }
@@ -112,7 +113,7 @@ public class LxlRpcBootStrap {
     }
 
     public LxlRpcBootStrap serialize(SerializeType serializeType) {
-        this.serializeType = serializeType;
+        this.configuration.setSerializeType(serializeType);
         return this;
     }
 
@@ -168,7 +169,7 @@ public class LxlRpcBootStrap {
                 });
 
         try {
-            serverBootstrap.bind(port).sync();
+            serverBootstrap.bind(this.configuration.getPORT()).sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -193,16 +194,14 @@ public class LxlRpcBootStrap {
     }
 
     public LxlRpcBootStrap compress(CompressType compressType) {
-        LxlRpcBootStrap.compressType = compressType;
+        this.configuration.setCompressType(compressType);
         return this;
     }
 
-    public int getPort() {
-        return port;
-    }
+
 
     public LxlRpcBootStrap port(int port) {
-        this.port = port;
+        this.configuration.setPORT(port);
         return this;
     }
 
@@ -284,6 +283,14 @@ public class LxlRpcBootStrap {
         String fileName = absolutePath.substring(absolutePath.indexOf(basePath.replaceAll("/", Matcher.quoteReplacement("\\"))))
                 .replaceAll("\\\\",".");
             return fileName.substring(0,fileName.indexOf(".class"));
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
     }
 
     public static void main(String[] args) {

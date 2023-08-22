@@ -56,11 +56,11 @@ public class HeartBeatDetector {
                 int tryTimes = 3;//请求异常重连
                 int totalTimes = tryTimes;
                 while (tryTimes-- > 0) {
-                    long requestId = LxlRpcBootStrap.ID_GENERATOR.getId();
+                    long requestId = LxlRpcBootStrap.getInstance().getConfiguration().getID_GENERATOR().getId();
                     LxlRpcRequest rpcRequest = LxlRpcRequest.builder()
                             .requestId(requestId)
-                            .compressType(LxlRpcBootStrap.compressType.ID)
-                            .serializableType(LxlRpcBootStrap.serializeType.ID)
+                            .compressType(LxlRpcBootStrap.getInstance().getConfiguration().getCompressType().ID)
+                            .serializableType(LxlRpcBootStrap.getInstance().getConfiguration().getSerializeType().ID)
                             .requestType(RequestType.HEART_BEAT.ID)
                             .timeStamp(System.currentTimeMillis())
                             .build();

@@ -54,7 +54,7 @@ public class UpAndDownWatcher implements Watcher {
             }));
             //调用reloadBanlance方法
             //获得负载均衡器,进行重新的reBalance
-            LoadBalancer loadBalancer = LxlRpcBootStrap.LOAD_BALANCER;
+            LoadBalancer loadBalancer = LxlRpcBootStrap.getInstance().getConfiguration().getLoadBalancer();
             loadBalancer.reLoadBalance(serviceName,inetSocketAddressList);
         }
     }
