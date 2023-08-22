@@ -9,8 +9,6 @@ import com.lxl.discovery.RegistryConfig;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.SerializeType;
 import com.lxl.loadbalance.LoadBalancer;
-import com.lxl.loadbalance.impl.ConsistentLoadBalancer;
-import com.lxl.loadbalance.impl.MinimumResponseTimeBalancer;
 import com.lxl.loadbalance.impl.RoundLoadBalancer;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import io.netty.bootstrap.ServerBootstrap;
@@ -23,10 +21,13 @@ import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
 
 
 public class LxlRpcBootStrap {
@@ -39,7 +40,7 @@ public class LxlRpcBootStrap {
     //用于存储completableFutrue,一个completableFutrue就维护这一次远程方法调用的操作
     public static final Map<Long, CompletableFuture<Object>> COMPLETABLE_FUTURE_CACHE = new ConcurrentHashMap<>(256);
 
-    public static final SortedMap<Long,InetSocketAddress> RESPONSE_TIME_CHANNEL_CACHE = Collections.synchronizedSortedMap(new TreeMap<>());
+    public static final SortedMap<Long, InetSocketAddress> RESPONSE_TIME_CHANNEL_CACHE = Collections.synchronizedSortedMap(new TreeMap<>());
 
     //用于存放方法调用时候的请求
     public static final ThreadLocal<LxlRpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
@@ -204,5 +205,53 @@ public class LxlRpcBootStrap {
 
     public Registry getRegistry() {
         return registry;
+    }
+
+    public LxlRpcBootStrap scan(String packageName) {
+        //通过包名获取其下的所有类的权限定名
+        List<String> classesName = getAllClassesName(packageName);
+        //通过反射获取它的接口，构建具体的实现
+        //发布
+        return null;
+    }
+
+    private List<String> getAllClassesName(String packageName) {
+
+        //通过包路径获取绝对路径
+        String basePath = packageName.replaceAll("\\.", "/");
+        URL url = ClassLoader.getSystemClassLoader().getResource(basePath);
+        if (url == null) {
+            throw new RuntimeException("包扫描时出现异常");
+        }
+        String absolutePath = url.getPath();
+        List<String> classesNames = new ArrayList<>();
+        recursionFile(absolutePath, classesNames,basePath);
+        System.out.println("classesNames.toString() = " + classesNames.toString());
+        return null;
+    }
+
+    private void recursionFile(String absolutePath, List<String> classesNames,String basePath) {
+        File file = new File(absolutePath);
+        if (file.isDirectory()) {
+            //如果是目录
+            File[] files = file.listFiles(pathname -> pathname.isDirectory() || pathname.getPath().contains(".class"));
+            if (files == null || files.length <= 0) return;
+            for (File child : files) {
+                recursionFile(child.getAbsolutePath(), classesNames,basePath);
+            }
+        } else if (file.isFile()) {
+            //如果是文件
+            classesNames.add(getClassNameByAbsolutePath(absolutePath,basePath));
+        }
+    }
+
+    private String getClassNameByAbsolutePath(String absolutePath, String basePath) {
+        String fileName = absolutePath.substring(absolutePath.indexOf(basePath.replaceAll("/", Matcher.quoteReplacement("\\"))))
+                .replaceAll("\\\\",".");
+            return fileName.substring(0,fileName.indexOf(".class"));
+    }
+
+    public static void main(String[] args) {
+        LxlRpcBootStrap.getInstance().getAllClassesName("com.lxl.core");
     }
 }
