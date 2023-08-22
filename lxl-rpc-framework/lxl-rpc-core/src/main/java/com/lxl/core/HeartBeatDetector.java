@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
@@ -32,7 +33,7 @@ public class HeartBeatDetector {
 
         List<InetSocketAddress> inetSocketAddressList = LxlRpcBootStrap.getInstance().getRegistry().lookup(serviceName);
         inetSocketAddressList.forEach(inetSocketAddress -> {
-            if (!LxlRpcBootStrap.CHANNEL_CACHE.containsKey(inetSocketAddress)){
+            if (!LxlRpcBootStrap.CHANNEL_CACHE.containsKey(inetSocketAddress)) {
                 try {
                     ChannelFuture channelFuture = NettyClientBootStrapInitializer.getBootstrap().connect(inetSocketAddress).sync();
                     LxlRpcBootStrap.CHANNEL_CACHE.put(inetSocketAddress, channelFuture.channel());
@@ -48,39 +49,54 @@ public class HeartBeatDetector {
                 @Override
                 public void run() {
                     LxlRpcBootStrap.CHANNEL_CACHE.forEach((inetSocketAddress, channel) -> {
-                        long requestId = LxlRpcBootStrap.ID_GENERATOR.getId();
-                        LxlRpcRequest rpcRequest = LxlRpcRequest.builder()
-                                .requestId(requestId)
-                                .compressType(LxlRpcBootStrap.compressType.ID)
-                                .serializableType(LxlRpcBootStrap.serializeType.ID)
-                                .requestType(RequestType.HEART_BEAT.ID)
-                                .timeStamp(System.currentTimeMillis())
-                                .build();
-                        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(requestId, new CompletableFuture<>());
-                        long startTime = System.currentTimeMillis();
-                        channel.writeAndFlush(rpcRequest).addListener(new ChannelFutureListener() {
-                            @Override
-                            public void operationComplete(ChannelFuture future) throws Exception {
-                                if (!future.isSuccess()) {
-                                    LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(requestId).completeExceptionally(future.cause());
+                        int tryTimes = 3;//请求异常重连
+                        int totalTimes = tryTimes;
+                        while (tryTimes-- > 0) {
+                            long requestId = LxlRpcBootStrap.ID_GENERATOR.getId();
+                            LxlRpcRequest rpcRequest = LxlRpcRequest.builder()
+                                    .requestId(requestId)
+                                    .compressType(LxlRpcBootStrap.compressType.ID)
+                                    .serializableType(LxlRpcBootStrap.serializeType.ID)
+                                    .requestType(RequestType.HEART_BEAT.ID)
+                                    .timeStamp(System.currentTimeMillis())
+                                    .build();
+                            LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(requestId, new CompletableFuture<>());
+                            long startTime = System.currentTimeMillis();
+                            channel.writeAndFlush(rpcRequest).addListener(new ChannelFutureListener() {
+                                @Override
+                                public void operationComplete(ChannelFuture future) throws Exception {
+                                    if (!future.isSuccess()) {
+                                        LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(requestId).completeExceptionally(future.cause());
+                                    }
+                                }
+                            });
+                            try {
+                                LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(requestId).get(3, TimeUnit.SECONDS);
+                                long endTime = System.currentTimeMillis();
+                                long responeseTime = endTime - startTime;
+                                if (log.isDebugEnabled()) {
+                                    log.debug("服务器【{}】的心跳响应时间为 {}", inetSocketAddress.toString(), responeseTime);
+                                }
+                                LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.put(responeseTime,inetSocketAddress);
+                                break;//如果成功就跳出循环
+                            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                                log.error("和地址为【{}】的主机连接发生异常，将尝试进行【{}】次重连",inetSocketAddress.toString(),totalTimes-tryTimes);
+                                if (tryTimes == 0){
+                                    //将失效的地址移出列表
+                                    LxlRpcBootStrap.CHANNEL_CACHE.remove(inetSocketAddress);
+                                    log.error("将失效的地址【{}】移出列表", inetSocketAddress);
+                                }
+                                try {
+                                    Thread.sleep(10L * new Random().nextInt(1,6));//睡一下，防止重试风暴问题
+                                } catch (InterruptedException ex) {
+                                    throw new RuntimeException(ex);
                                 }
                             }
-                        });
-                        try {
-                            LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(requestId).get(3, TimeUnit.SECONDS);
-                            long endTime = System.currentTimeMillis();
-                            long responeseTime = endTime - startTime;
-                            if (log.isDebugEnabled()) {
-                                log.debug("服务器【{}】的心跳响应时间为 {}", inetSocketAddress.toString(), responeseTime);
-                            }
-                            LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.put(responeseTime,inetSocketAddress);
-                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                            throw new RuntimeException(e);
                         }
                     });
                 }
             }, 0, 5000);
-        },"lxl-rpc-HeartBeatDetector-Thread");
+        }, "lxl-rpc-HeartBeatDetector-Thread");
         thread.setDaemon(true);//设置为守护线程
         thread.start();
     }
