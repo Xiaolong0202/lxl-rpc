@@ -84,6 +84,7 @@ public class HeartBeatDetector {
                                 if (tryTimes == 0){
                                     //将失效的地址移出列表
                                     LxlRpcBootStrap.CHANNEL_CACHE.remove(inetSocketAddress);
+                                    //todo 将还要将treeMap中的节点删除
                                     log.error("将失效的地址【{}】移出列表", inetSocketAddress);
                                 }
                                 try {

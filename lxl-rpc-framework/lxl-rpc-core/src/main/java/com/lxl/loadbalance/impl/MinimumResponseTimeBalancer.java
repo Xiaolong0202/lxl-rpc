@@ -45,7 +45,14 @@ public class MinimumResponseTimeBalancer extends AbstractLoadBalancer {
             if (LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.size()<=0){//若没有初始化好则从缓存当中拿一个
                 return LxlRpcBootStrap.CHANNEL_CACHE.entrySet().iterator().next().getKey();
             }
-            InetSocketAddress res = LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.get(LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.firstKey());
+            Long firstedKey = LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.firstKey();
+            InetSocketAddress res = LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.get(firstedKey);
+            if (!LxlRpcBootStrap.CHANNEL_CACHE.containsKey(res)){
+                //如果channel缓存当中没有包含该InetSocketList的channel,则从treeMap当中删除
+                log.error("如果channel缓存当中没有包含该【{}】的channel,则从treeMap当中删除",res);
+                LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.remove(firstedKey);
+                return nextServiceAddr();
+            }
             return res;
         }
     }
