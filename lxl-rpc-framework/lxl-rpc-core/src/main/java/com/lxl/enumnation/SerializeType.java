@@ -28,8 +28,4 @@ public enum SerializeType {
         return serializeTypeOptional.get();
     }
 
-    public static void main(String[] args) {
-        SerializeType serializeType = SerializeType.getSerializeType((byte) 2);
-        System.out.println(serializeType);
-    }
 }

@@ -2,6 +2,7 @@ package com.lxl.discovery.wathcer;
 
 import com.lxl.LxlRpcBootStrap;
 import com.lxl.NettyClientBootStrapInitializer;
+import com.lxl.loadbalance.LoadBalancer;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.WatchedEvent;
@@ -24,9 +25,9 @@ public class UpAndDownWatcher implements Watcher {
             if (log.isDebugEnabled())log.debug("检测到有服务上|下线");
             String serviceName  = getServiceName(event.getPath());
             List<InetSocketAddress> inetSocketAddressList = LxlRpcBootStrap.getInstance().getRegistry().lookup(serviceName);
+            //处理上线的结点，
             for (InetSocketAddress inetSocketAddress : inetSocketAddressList) {
                 //新增的结点
-                //下线的结点
                 Channel channel = null;
                 if (!LxlRpcBootStrap.CHANNEL_CACHE.containsKey(inetSocketAddress)){
                     try {
@@ -41,8 +42,20 @@ public class UpAndDownWatcher implements Watcher {
                     }
                 }
             }
-            System.out.println("子节点产生了变化");
-            //如果产生变更
+            //处理下线的结点,在Channel_cache当中但是不在
+            LxlRpcBootStrap.CHANNEL_CACHE.forEach(((inetSocketAddress, channel) -> {
+                //不存在inetSocketAddressList当中的话,则需要删除该结点|
+                if (!inetSocketAddressList.contains(inetSocketAddress)){
+                    LxlRpcBootStrap.CHANNEL_CACHE.remove(inetSocketAddress);
+                    if(log.isDebugEnabled()){
+                        log.debug("服务节点【{}】已经下线",inetSocketAddress);
+                    }
+                }
+            }));
+            //调用reloadBanlance方法
+            //获得负载均衡器,进行重新的reBalance
+            LoadBalancer loadBalancer = LxlRpcBootStrap.LOAD_BALANCER;
+            loadBalancer.reLoadBalance(serviceName,inetSocketAddressList);
         }
     }
 

@@ -80,5 +80,6 @@ public class ConsistentLoadBalancer extends AbstractLoadBalancer {
             }
             return hashRing.get(hashCode);
         }
+
     }
 }

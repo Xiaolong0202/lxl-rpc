@@ -2,7 +2,6 @@ package com.lxl.loadbalance;
 
 import com.lxl.LxlRpcBootStrap;
 import com.lxl.discovery.Registry;
-import com.lxl.loadbalance.impl.RoundLoadBalancer;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -30,6 +29,11 @@ public abstract class AbstractLoadBalancer implements LoadBalancer{
             return selectServiceAddr(serviceName);
         }
         return selector.nextServiceAddr();
+    }
+
+    @Override
+    public void reLoadBalance(String serviceName, List<InetSocketAddress> inetSocketAddressList) {
+        SELECTOR_CACHE.put(serviceName,getSelector(inetSocketAddressList));
     }
 
     public abstract Selector getSelector(List<InetSocketAddress> inetSocketAddresses);

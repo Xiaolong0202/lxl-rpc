@@ -94,15 +94,20 @@ public class HeartBeatDetector {
                         }
                     }
                 });
-                //每次轮询的发送玩心跳检测之后打印TreeMap
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                //打印TreeMap
                 if (log.isDebugEnabled()){
                     log.debug("---------------------------------TreeMap--------------------------------");
                     LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.forEach((responese,inetSocket)->{
                         log.debug("responeseTime[{}],inetSocketAddress[{}]",responese,inetSocket);
-                });
+                    });
                 }
             }
-        }, 0, 5000), "lxl-rpc-HeartBeatDetector-Thread");
+        }, 0, 2000), "lxl-rpc-HeartBeatDetector-Thread");
         thread.setDaemon(true);//设置为守护线程
         thread.start();
     }
