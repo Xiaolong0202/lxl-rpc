@@ -1,5 +1,6 @@
 package com.lxl;
 
+import com.lxl.annotation.LxlRpcApi;
 import com.lxl.channelHandler.handler.MethodCallInBoundHandler;
 import com.lxl.channelHandler.handler.RpcRequestDecoder;
 import com.lxl.channelHandler.handler.RpcResponseToByteEncoder;
@@ -22,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.util.*;
@@ -137,7 +140,7 @@ public class LxlRpcBootStrap {
      * @param services
      * @return
      */
-    public LxlRpcBootStrap publish(List<ServiceConfig> services) {
+    public LxlRpcBootStrap publish(List<ServiceConfig<?>> services) {
         services.forEach(this::publish);
         return this;
     }
@@ -211,8 +214,40 @@ public class LxlRpcBootStrap {
         //通过包名获取其下的所有类的权限定名
         List<String> classesName = getAllClassesName(packageName);
         //通过反射获取它的接口，构建具体的实现
+        List<? extends Class<?>> classList = classesName.stream()
+                .map(cls -> {
+                    try {
+                        return Class.forName(cls);
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).filter(clazz -> {
+                    return clazz.getAnnotation(LxlRpcApi.class) != null;
+                })
+                .toList();
+        for (Class<?> clazz : classList) {
+            Class<?>[] clazzInterfaces = clazz.getInterfaces();
+            Object clazzInstance;
+            try {
+               clazzInstance = clazz.getConstructor().newInstance();//使用空参的方法进行构造一个实例
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+
+            for (Class<?> clazzInterface : clazzInterfaces) {
+                ServiceConfig<Object> serviceConfig = new ServiceConfig<>();
+                serviceConfig.setRef(clazzInstance);
+                serviceConfig.setInterface(clazzInterface);
+                this.publish(serviceConfig);
+                if (log.isDebugEnabled()){
+                    log.debug("---->已经通过包扫描，将服务【{}】发布",serviceConfig.getInterface().getName());
+                }
+            }
+
+        }
         //发布
-        return null;
+        return this;
     }
 
     private List<String> getAllClassesName(String packageName) {
@@ -227,7 +262,7 @@ public class LxlRpcBootStrap {
         List<String> classesNames = new ArrayList<>();
         recursionFile(absolutePath, classesNames,basePath);
         System.out.println("classesNames.toString() = " + classesNames.toString());
-        return null;
+        return classesNames;
     }
 
     private void recursionFile(String absolutePath, List<String> classesNames,String basePath) {
@@ -252,6 +287,6 @@ public class LxlRpcBootStrap {
     }
 
     public static void main(String[] args) {
-        LxlRpcBootStrap.getInstance().getAllClassesName("com.lxl.core");
+        LxlRpcBootStrap.getInstance().getAllClassesName("com.lxl");
     }
 }

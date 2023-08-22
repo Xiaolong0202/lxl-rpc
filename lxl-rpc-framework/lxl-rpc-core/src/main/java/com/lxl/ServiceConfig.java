@@ -2,14 +2,14 @@ package com.lxl;
 
 public class ServiceConfig <T>{
 
-    private Class<T> interfaceRef;
+    private Class<?> interfaceRef;
     private Object ref;
 
-    public Class<T> getInterface() {
+    public Class<?> getInterface() {
         return interfaceRef;
     }
 
-    public void setInterface(Class<T> interfaceProvider) {
+    public void setInterface(Class<?> interfaceProvider) {
         this.interfaceRef = interfaceProvider;
     }
 
