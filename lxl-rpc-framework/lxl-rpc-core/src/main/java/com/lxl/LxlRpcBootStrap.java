@@ -184,7 +184,7 @@ public class LxlRpcBootStrap {
     public LxlRpcBootStrap reference(ReferenceConfig<?> referenceConfig) {
         //在这个方法当中获取对应的配置项，用来配置reference,将来使用get方法的时候就可以获取代理对象
         referenceConfig.setRegistry(registry);
-//        HeartBeatDetector.detectorHeartBeat(referenceConfig.getInterface().getName());
+        HeartBeatDetector.detectorHeartBeat(referenceConfig.getInterface().getName());
         return this;
     }
 

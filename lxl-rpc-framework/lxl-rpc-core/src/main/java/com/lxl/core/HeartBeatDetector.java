@@ -78,6 +78,12 @@ public class HeartBeatDetector {
                                     log.debug("服务器【{}】的心跳响应时间为 {}", inetSocketAddress.toString(), responeseTime);
                                 }
                                 LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.put(responeseTime,inetSocketAddress);
+                                log.debug("---------------------------------TreeMap--------------------------------");
+                                LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.forEach((responese,inetSocket)->{
+                                    if (log.isDebugEnabled()){
+                                        log.debug("responeseTime[{}],inetSocketAddress[{}]",responese,inetSocket);
+                                    }
+                                });
                                 break;//如果成功就跳出循环
                             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                                 log.error("和地址为【{}】的主机连接发生异常，将尝试进行【{}】次重连",inetSocketAddress.toString(),totalTimes-tryTimes);
