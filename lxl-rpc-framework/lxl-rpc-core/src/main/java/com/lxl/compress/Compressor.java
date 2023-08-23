@@ -5,7 +5,7 @@ package com.lxl.compress;
  * @Description lxl-rpc
  * @DateTime 2023/8/18  16:10
  **/
-public interface Compresser {
+public interface Compressor {
 
 
     /**

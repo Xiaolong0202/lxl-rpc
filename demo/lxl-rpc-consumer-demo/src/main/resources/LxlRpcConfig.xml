@@ -6,16 +6,16 @@
     <appName>lxl-Rpc-demo</appName>
     <registry url="zookeeper://39.107.52.125:2181"/>
     <!--二选一-->
-    <serializeType type="JSON"/>
+    <serializeType type="HESSIAN"/>
     <serializer class="com.lxl.serialize.impl.HessianSerializerImpl"/>
     <!--二选一-->
-    <compressType type="GZIP"/>
+    <compressType type="ZIP"/>
     <compressor class="com.lxl.compress.impl.GzipCompressImpl"/>
     <!--二选一-->
 <!--    <loadBalancerType type="RoundLoabing"/>-->
     <loadBalancer class="com.lxl.loadbalance.impl.RoundLoadBalancer"/>
     
-    <idGenerator class="com.lxl.IdGenerator" dataCenterId="2" machineId="4"/>
+    <idGenerator class="com.lxl.IdGenerator" dataCenterId="3" machineId="5"/>
 
 
 </configuration>

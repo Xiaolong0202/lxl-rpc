@@ -21,7 +21,7 @@ public abstract class AbstractLoadBalancer implements LoadBalancer{
 
     @Override
     public InetSocketAddress selectServiceAddr(String serviceName) {
-        Registry registry = LxlRpcBootStrap.getInstance().getRegistry();
+        Registry registry = LxlRpcBootStrap.getInstance().getConfiguration().getRegistryConfig().getRegistry();
         Selector selector = SELECTOR_CACHE.get(serviceName);
         if (selector == null){
             selector = getSelector(registry.lookup(serviceName));//获取对应的selector实现类，由具体的selector去做均衡负载策略

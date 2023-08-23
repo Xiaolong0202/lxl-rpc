@@ -1,12 +1,11 @@
 package com.lxl.compress.impl;
 
-import com.lxl.compress.Compresser;
+import com.lxl.compress.Compressor;
 import com.lxl.exceptions.CompressException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.zip.*;
 
 /**
@@ -15,7 +14,7 @@ import java.util.zip.*;
  * @DateTime 2023/8/18  16:12
  **/
 @Slf4j
-public class ZipCompresserImpl implements Compresser {
+public class ZipCompressorImpl implements Compressor {
 
     @Override
     public byte[] compress(byte[] bytes) {

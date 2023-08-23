@@ -1,6 +1,6 @@
 package com.lxl.channelHandler.handler;
 
-import com.lxl.compress.Compresser;
+import com.lxl.compress.Compressor;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.RequestType;
 import com.lxl.enumnation.SerializeType;
@@ -8,13 +8,10 @@ import com.lxl.factory.CompressFactory;
 import com.lxl.factory.SerializerFactory;
 import com.lxl.serialize.Serializer;
 import com.lxl.transport.message.request.LxlRpcRequest;
-import com.lxl.transport.message.request.RequestPayload;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.*;
 
 
 /**
@@ -43,9 +40,9 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
             //序列化
             payLoadBytes = serializer.serialize(msg.getRequestPayload());
             //获取压缩器
-            Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(msg.getCompressType()));
+            Compressor compressor = CompressFactory.getSerializer(CompressType.getCompressType(msg.getCompressType()));
             //压缩
-            payLoadBytes = compresser.compress(payLoadBytes);
+            payLoadBytes = compressor.compress(payLoadBytes);
         }
         long fullLength = MessageEncoderConstant.REQUEST_HEAD_LENGTH + payLoadBytes.length;
         //请求头

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--   <!DOCTYPE 根元素PUBLIC "注册//组织//类型 标签//定义 语言""文档类型定义位置"[< !-内部子集声明，可选项目-->
+<!DOCTYPE configuration SYSTEM "lxl-rpc-config.dtd">
+<configuration>
+    <port>8089</port>
+    <appName>lxl-Rpc-demo</appName>
+    <registry url="zookeeper://39.107.52.125:2181"/>
+    <!--二选一-->
+    <serializeType type="HESSIAN"/>
+    <serializer class="com.lxl.serialize.impl.HessianSerializerImpl"/>
+    <!--二选一-->
+    <compressType type="ZIP"/>
+    <compressor class="com.lxl.compress.impl.GzipCompressImpl"/>
+    <!--二选一-->
+<!--    <loadBalancerType type="RoundLoabing"/>-->
+    <loadBalancer class="com.lxl.loadbalance.impl.RoundLoadBalancer"/>
+    
+    <idGenerator class="com.lxl.IdGenerator" dataCenterId="2" machineId="4"/>
+
+
+</configuration>

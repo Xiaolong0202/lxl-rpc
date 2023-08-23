@@ -1,8 +1,7 @@
 package com.lxl.channelHandler.handler;
 
-import com.lxl.compress.Compresser;
+import com.lxl.compress.Compressor;
 import com.lxl.enumnation.CompressType;
-import com.lxl.enumnation.ResponseType;
 import com.lxl.enumnation.SerializeType;
 import com.lxl.factory.CompressFactory;
 import com.lxl.factory.SerializerFactory;
@@ -12,10 +11,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 
 /**
  * 报文格式
@@ -44,9 +39,9 @@ public class RpcResponseToByteEncoder extends MessageToByteEncoder<LxlRpcRespons
             Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(msg.getSerializableType()));
             responseBody = serializer.serialize(msg.getObject());
             //获取压缩器
-            Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(msg.getCompressType()));
+            Compressor compressor = CompressFactory.getSerializer(CompressType.getCompressType(msg.getCompressType()));
             //压缩
-            responseBody = compresser.compress(responseBody);
+            responseBody = compressor.compress(responseBody);
         }
         out.writeBytes(MessageEncoderConstant.MAGIC_NUM);
         out.writeByte(MessageEncoderConstant.VERSION);

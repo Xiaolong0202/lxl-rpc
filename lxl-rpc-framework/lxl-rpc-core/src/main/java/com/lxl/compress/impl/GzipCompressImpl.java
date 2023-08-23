@@ -1,6 +1,6 @@
 package com.lxl.compress.impl;
 
-import com.lxl.compress.Compresser;
+import com.lxl.compress.Compressor;
 import com.lxl.exceptions.CompressException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,7 +16,7 @@ import java.util.zip.GZIPOutputStream;
  * @DateTime 2023/8/18  16:12
  **/
 @Slf4j
-public class GzipCompressImpl implements Compresser {
+public class GzipCompressImpl implements Compressor {
     @Override
     public byte[] compress(byte[] bytes) {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream(); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(out);) {

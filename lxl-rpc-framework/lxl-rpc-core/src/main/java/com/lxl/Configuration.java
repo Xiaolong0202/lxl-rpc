@@ -1,10 +1,14 @@
 package com.lxl;
 
+import com.lxl.compress.Compressor;
+import com.lxl.compress.impl.GzipCompressImpl;
 import com.lxl.discovery.RegistryConfig;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.SerializeType;
 import com.lxl.loadbalance.LoadBalancer;
 import com.lxl.loadbalance.impl.RoundLoadBalancer;
+import com.lxl.serialize.Serializer;
+import com.lxl.serialize.impl.HessianSerializerImpl;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.*;
@@ -31,21 +35,23 @@ import java.lang.reflect.InvocationTargetException;
 @Slf4j
 public class Configuration {
     //配置信息-->端口号
-    private int PORT = 8094;
+    private int PORT = 8080;
 
     //应用程序的名字
     private String appName = "default";
 
-    private ProtocolConfig protocolConfig;
+    private ProtocolConfig protocolConfig = new ProtocolConfig("JDK");
     //注册配置
-    private RegistryConfig registryConfig;
+    private RegistryConfig registryConfig = new RegistryConfig("zookeeper://39.107.52.125:2181");
 
     //配置信息--ID生成器
     private IdGenerator idGenerator = new IdGenerator(1L, 2L);
     //序列化的类型
     private SerializeType serializeType = SerializeType.JDK;
+    private Serializer serializer = new HessianSerializerImpl();
     //压缩的类型
     private CompressType compressType = CompressType.GZIP;
+    private Compressor compressor = new GzipCompressImpl();
     //负载均衡策略
     private LoadBalancer loadBalancer = new RoundLoadBalancer();
 
@@ -77,19 +83,43 @@ public class Configuration {
             XPathFactory xPathFactory = XPathFactory.newInstance();
             XPath xPath = xPathFactory.newXPath();
             //解析所有的属性
-            this.setPORT(resolvePort(document, xPath));
-            this.setAppName(resolveAppName(document, xPath));
-            this.setIdGenerator(resolveIdGenerator(document, xPath));
-            this.setRegistryConfig(resolveRegistryConfig(document, xPath));
-            this.setSerializeType(resolveSerializeType(document, xPath));
-            this.setCompressType(resolveCompressType(document, xPath));
-            this.setLoadBalancer(resolveLoadBalancer(document, xPath));
-            log.info(configuration.toString());
-
+            configuration.setPORT(resolvePort(document, xPath));
+            configuration.setAppName(resolveAppName(document, xPath));
+            configuration.setIdGenerator(resolveIdGenerator(document, xPath));
+            configuration.setRegistryConfig(resolveRegistryConfig(document, xPath));
+            configuration.setSerializeType(resolveSerializeType(document, xPath));
+            configuration.setSerializer(resolveSerializer(document, xPath));
+            configuration.setCompressType(resolveCompressType(document, xPath));
+            configuration.setCompressor(resolveCompress(document, xPath));
+            configuration.setLoadBalancer(resolveLoadBalancer(document, xPath));
+            log.info("从xml当中读取配置成功");
+            //如果还有其他的新的标签则继续添加新的方法
         } catch (SAXException | IOException | ParserConfigurationException e) {
             log.info("为发现对应的配置文件或者,解析XML文件的时候出现了异常,将选用默认的配置");
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 解析序列化器
+     * @param document
+     * @param xPath
+     * @return
+     */
+    private Serializer resolveSerializer(Document document, XPath xPath) {
+        String expression = "/configuration/serializer[1]";
+        return parseObject(document,xPath,expression,null);
+    }
+
+    /**
+     * 解析解/压缩器
+     * @param document
+     * @param xPath
+     * @return
+     */
+    private Compressor resolveCompress(Document document, XPath xPath) {
+        String expression = "/configuration/compressor[1]";
+        return parseObject(document,xPath,expression,null);
     }
 
     /**
@@ -143,6 +173,12 @@ public class Configuration {
         return new RegistryConfig(connextString);
     }
 
+    /**
+     * 解析ID发号器
+     * @param document
+     * @param xPath
+     * @return
+     */
     private IdGenerator resolveIdGenerator(Document document, XPath xPath) {
         String expression = "/configuration/idGenerator[1]";
         String dataCenterId = parseAttribute(document, xPath, expression, "dataCenterId");
@@ -176,8 +212,7 @@ public class Configuration {
     }
 
     /**
-     * 解析一个结点返回一个实例
-     *
+     * 解析一个结点返回一个对象实例
      * @param document
      * @param xPath
      * @param expression
@@ -208,6 +243,14 @@ public class Configuration {
         }
     }
 
+    /**
+     * 解析某个节点的属性
+     * @param document
+     * @param xPath
+     * @param expression
+     * @param attrName
+     * @return
+     */
     public String parseAttribute(Document document, XPath xPath, String expression, String attrName) {
         try {
             //构建xpath表达式.XPathConstants.STRING指定的返回的类型
@@ -220,6 +263,13 @@ public class Configuration {
         }
     }
 
+    /**
+     * 解析某个节点的内容
+     * @param document
+     * @param xPath
+     * @param expression
+     * @return
+     */
     public String parseNodeContent(Document document, XPath xPath, String expression) {
         try {
             //构建xpath表达式.XPathConstants.STRING指定的返回的类型
@@ -231,8 +281,6 @@ public class Configuration {
         }
     }
 
-    public static void main(String[] args) {
-        new Configuration();
-    }
+
 
 }

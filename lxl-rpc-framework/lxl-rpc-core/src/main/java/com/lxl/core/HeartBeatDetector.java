@@ -31,7 +31,7 @@ public class HeartBeatDetector {
      */
     public static void detectorHeartBeat(String serviceName) {
 
-        List<InetSocketAddress> inetSocketAddressList = LxlRpcBootStrap.getInstance().getRegistry().lookup(serviceName);
+        List<InetSocketAddress> inetSocketAddressList = LxlRpcBootStrap.getInstance().getConfiguration().getRegistryConfig().getRegistry().lookup(serviceName);
         inetSocketAddressList.forEach(inetSocketAddress -> {
             if (!LxlRpcBootStrap.CHANNEL_CACHE.containsKey(inetSocketAddress)) {
                 try {

@@ -1,8 +1,8 @@
 package com.lxl.factory;
 
-import com.lxl.compress.Compresser;
+import com.lxl.compress.Compressor;
 import com.lxl.compress.impl.GzipCompressImpl;
-import com.lxl.compress.impl.ZipCompresserImpl;
+import com.lxl.compress.impl.ZipCompressorImpl;
 import com.lxl.enumnation.CompressType;
 import com.lxl.exceptions.SerializerException;
 
@@ -20,20 +20,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CompressFactory {
 
     //序列化器的缓存
-    private static final Map<CompressType, Compresser> COMPRESS_CACHE = new ConcurrentHashMap<>(8);
+    private static final Map<CompressType, Compressor> COMPRESS_CACHE = new ConcurrentHashMap<>(8);
 
-    public static Compresser getSerializer(CompressType compressType) {
-        Compresser compresser = COMPRESS_CACHE.get(compressType);
-        if (compresser != null) return compresser;
+    public static Compressor getSerializer(CompressType compressType) {
+        Compressor compressor = COMPRESS_CACHE.get(compressType);
+        if (compressor != null) return compressor;
         if (compressType == CompressType.ZIP) {
-            compresser = new ZipCompresserImpl();
+            compressor = new ZipCompressorImpl();
         } else if (compressType == CompressType.GZIP) {
-            compresser = new GzipCompressImpl();
+            compressor = new GzipCompressImpl();
         } else {
             throw new SerializerException("给定的序列化类型没有对应的实现 ");
         }
-        COMPRESS_CACHE.put(compressType, compresser);
-        return compresser;
+        COMPRESS_CACHE.put(compressType, compressor);
+        return compressor;
     }
 
 }

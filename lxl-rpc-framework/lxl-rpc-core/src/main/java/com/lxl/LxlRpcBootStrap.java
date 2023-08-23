@@ -39,7 +39,7 @@ import java.util.regex.Matcher;
 public class LxlRpcBootStrap {
     //维护一个全局的配置中心
     private Configuration configuration;
-    private Registry registry;
+
     public static final Map<InetSocketAddress, Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(256);
     public static final Map<String, ServiceConfig> SERVICE_CONFIG_CACHE = new ConcurrentHashMap<>(256);
     //用于存储completableFutrue,一个completableFutrue就维护这一次远程方法调用的操作
@@ -82,7 +82,6 @@ public class LxlRpcBootStrap {
      */
     public LxlRpcBootStrap registry(RegistryConfig registryConfig) {
         this.configuration.setRegistryConfig(registryConfig);
-        this.registry = configuration.getRegistryConfig().getRegistry();
         return this;
     }
 
@@ -130,7 +129,7 @@ public class LxlRpcBootStrap {
      */
     public LxlRpcBootStrap publish(ServiceConfig<?> service) {
         //使用了抽象注册中心的概念
-        registry.register(service);
+        this.configuration.getRegistryConfig().getRegistry().register(service);
         SERVICE_CONFIG_CACHE.put(service.getInterface().getName(), service);
         return this;
     }
@@ -188,7 +187,7 @@ public class LxlRpcBootStrap {
      */
     public LxlRpcBootStrap reference(ReferenceConfig<?> referenceConfig) {
         //在这个方法当中获取对应的配置项，用来配置reference,将来使用get方法的时候就可以获取代理对象
-        referenceConfig.setRegistry(registry);
+        referenceConfig.setRegistry(this.configuration.getRegistryConfig().getRegistry());
         HeartBeatDetector.detectorHeartBeat(referenceConfig.getInterface().getName());
         return this;
     }
@@ -203,10 +202,6 @@ public class LxlRpcBootStrap {
     public LxlRpcBootStrap port(int port) {
         this.configuration.setPORT(port);
         return this;
-    }
-
-    public Registry getRegistry() {
-        return registry;
     }
 
     public LxlRpcBootStrap scan(String packageName) {
@@ -293,7 +288,4 @@ public class LxlRpcBootStrap {
         this.configuration = configuration;
     }
 
-    public static void main(String[] args) {
-        LxlRpcBootStrap.getInstance().getAllClassesName("com.lxl");
-    }
 }

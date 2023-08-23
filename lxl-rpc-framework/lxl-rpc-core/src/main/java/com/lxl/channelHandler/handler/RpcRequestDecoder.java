@@ -1,6 +1,6 @@
 package com.lxl.channelHandler.handler;
 
-import com.lxl.compress.Compresser;
+import com.lxl.compress.Compressor;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.RequestType;
 import com.lxl.enumnation.SerializeType;
@@ -15,7 +15,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.*;
 import java.util.Date;
 
 /**
@@ -76,9 +75,9 @@ public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
             byteBuf.readBytes(requestBody);
 
             //获取压缩器
-            Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(compressType));
+            Compressor compressor = CompressFactory.getSerializer(CompressType.getCompressType(compressType));
             //解压
-            requestBody = compresser.decompress(requestBody);
+            requestBody = compressor.decompress(requestBody);
 
             //获取序列化器
             Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(serializeType));

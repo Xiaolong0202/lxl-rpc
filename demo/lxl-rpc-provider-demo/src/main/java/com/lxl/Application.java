@@ -15,11 +15,11 @@ public class Application {
         //配置  应用的名称  注册中心  序列化协议  压缩方式
         //发布服务 启动服务
         LxlRpcBootStrap.getInstance()
-                .application("first-rpc-provider")
+//                .application("first-rpc-provider")
                 .registry(new RegistryConfig("zookeeper://39.107.52.125:2181"))
-                .protocol(new ProtocolConfig("jdk"))
-                .port(3339)
-//                .publish(service)//发布服务;
+//                .protocol(new ProtocolConfig("jdk"))
+//                .port(3339)
+                .publish(service)//发布服务;
                 .scan("com.lxl.impl")
                 .start();
     }

@@ -9,6 +9,8 @@ public class RegistryConfig {
 
     //定义连接的url
     private String connectString;
+
+    private Registry registry = null;
     public RegistryConfig(String connectString) {
         this.connectString = connectString;
     }
@@ -19,6 +21,7 @@ public class RegistryConfig {
      * @return
      */
     public Registry getRegistry() {
+        if (this.registry != null) return this.registry;
         String lowerCaseRegistryType = getLowerCaseRegistryType(connectString,true);
         if ("zookeeper".equals(lowerCaseRegistryType)){
             return new ZookeeperRegistry(getLowerCaseRegistryType(connectString,false), Constant.DEFAULT_ZK_TIME_OUT);

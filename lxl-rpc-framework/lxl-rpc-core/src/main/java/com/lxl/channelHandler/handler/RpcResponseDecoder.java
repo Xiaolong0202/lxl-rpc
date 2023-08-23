@@ -1,22 +1,17 @@
 package com.lxl.channelHandler.handler;
 
-import com.lxl.compress.Compresser;
+import com.lxl.compress.Compressor;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.SerializeType;
 import com.lxl.exceptions.NetWorkException;
 import com.lxl.factory.CompressFactory;
 import com.lxl.factory.SerializerFactory;
 import com.lxl.serialize.Serializer;
-import com.lxl.transport.message.request.RequestPayload;
 import com.lxl.transport.message.response.LxlRpcResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 
 /**
  * 魔术值 6
@@ -73,9 +68,9 @@ public class RpcResponseDecoder extends LengthFieldBasedFrameDecoder {
         Object bodyObject = null;
        if (objectBytes.length > 0){
            //获取压缩器
-           Compresser compresser = CompressFactory.getSerializer(CompressType.getCompressType(compressType));
+           Compressor compressor = CompressFactory.getSerializer(CompressType.getCompressType(compressType));
            //解压缩
-           objectBytes = compresser.decompress(objectBytes);
+           objectBytes = compressor.decompress(objectBytes);
 
            //反序列化
            Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(serializeType));
