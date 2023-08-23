@@ -44,7 +44,7 @@ public class RpcInvocationHandler implements InvocationHandler {
         //首先构建请求类
         RequestPayload payload = new RequestPayload(interfaceRef.getName(), method.getName(), method.getParameterTypes(), args, method.getReturnType());
 
-        long requestId = LxlRpcBootStrap.getInstance().getConfiguration().getID_GENERATOR().getId();
+        long requestId = LxlRpcBootStrap.getInstance().getConfiguration().getIdGenerator().getId();
         LxlRpcRequest rpcRequest = LxlRpcRequest.builder()
                 .requestId(requestId)
                 .compressType(LxlRpcBootStrap.getInstance().getConfiguration().getCompressType().ID)

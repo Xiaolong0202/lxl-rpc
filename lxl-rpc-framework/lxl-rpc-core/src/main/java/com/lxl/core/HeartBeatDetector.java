@@ -56,7 +56,7 @@ public class HeartBeatDetector {
                 int tryTimes = 3;//请求异常重连
                 int totalTimes = tryTimes;
                 while (tryTimes-- > 0) {
-                    long requestId = LxlRpcBootStrap.getInstance().getConfiguration().getID_GENERATOR().getId();
+                    long requestId = LxlRpcBootStrap.getInstance().getConfiguration().getIdGenerator().getId();
                     LxlRpcRequest rpcRequest = LxlRpcRequest.builder()
                             .requestId(requestId)
                             .compressType(LxlRpcBootStrap.getInstance().getConfiguration().getCompressType().ID)
