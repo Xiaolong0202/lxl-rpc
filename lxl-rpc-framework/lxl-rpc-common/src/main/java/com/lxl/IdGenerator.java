@@ -45,7 +45,7 @@ public class IdGenerator {
     static {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
-            Date startDate = simpleDateFormat.parse("2023-01-01 00:00:00");
+            Date startDate = simpleDateFormat.parse("2023-01-01 00:00:00");//选择一个时间当时间戳的起始日期
             START_TIME_STAMP = startDate.getTime();
         } catch (ParseException e) {
             throw new RuntimeException(e);
