@@ -15,7 +15,7 @@
 <!--    <loadBalancerType type="RoundLoabing"/>-->
     <loadBalancer class="com.lxl.loadbalance.impl.RoundLoadBalancer"/>
     
-    <idGenerator class="com.lxl.IdGenerator" dataCenterId="3" machineId="5"/>
+    <idGenerator class="com.lxl.core.IdGenerator" dataCenterId="3" machineId="5"/>
 
 
 </configuration>

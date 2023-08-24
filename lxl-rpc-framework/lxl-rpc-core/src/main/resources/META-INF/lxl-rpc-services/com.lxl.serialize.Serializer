@@ -1,0 +1,2 @@
+com.lxl.serialize.impl.JdkSerializerImpl
+com.lxl.serialize.impl.HessianSerializerImpl

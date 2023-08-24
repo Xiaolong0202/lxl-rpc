@@ -1,75 +1,47 @@
-package com.lxl;
+package com.lxl.config.resolver;
 
 import com.lxl.compress.Compressor;
-import com.lxl.compress.impl.GzipCompressImpl;
+import com.lxl.config.Configuration;
+import com.lxl.core.IdGenerator;
 import com.lxl.discovery.RegistryConfig;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.SerializeType;
 import com.lxl.loadbalance.LoadBalancer;
-import com.lxl.loadbalance.impl.RoundLoadBalancer;
 import com.lxl.serialize.Serializer;
-import com.lxl.serialize.impl.HessianSerializerImpl;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringBufferInputStream;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * 全局的配置类： 代码配置-->xml配置-->spi配置-->默认项
- *
  * @Author LiuXiaolong
  * @Description lxl-rpc
- * @DateTime 2023/8/23  1:18
+ * @DateTime 2023/8/24  19:26
  **/
-@Data
 @Slf4j
-public class Configuration {
-    //配置信息-->端口号
-    private int PORT = 8080;
-
-    //应用程序的名字
-    private String appName = "default";
-
-    private ProtocolConfig protocolConfig = new ProtocolConfig("JDK");
-    //注册配置
-    private RegistryConfig registryConfig = new RegistryConfig("zookeeper://39.107.52.125:2181");
-
-    //配置信息--ID生成器
-    private IdGenerator idGenerator = new IdGenerator(1L, 2L);
-    //序列化的类型
-    private SerializeType serializeType = SerializeType.JDK;
-    private Serializer serializer = new HessianSerializerImpl();
-    //压缩的类型
-    private CompressType compressType = CompressType.GZIP;
-    private Compressor compressor = new GzipCompressImpl();
-    //负载均衡策略
-    private LoadBalancer loadBalancer = new RoundLoadBalancer();
-
-    //读取xml
+public class XMLResolver {
 
 
-    //进行配置
-
-    public Configuration() {
-        loadFromXml(this);
-    }
 
     /**
      * 从配置文件读取信息
      *
      * @param configuration
      */
-    private void loadFromXml(Configuration configuration) {
+    public void loadFromXml(Configuration configuration) {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setValidating(false);//禁用DTD校验
         DocumentBuilder documentBuilder = null;
@@ -280,7 +252,5 @@ public class Configuration {
             throw new RuntimeException(e);
         }
     }
-
-
 
 }

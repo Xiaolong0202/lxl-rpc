@@ -1,4 +1,4 @@
-package com.lxl;
+package com.lxl.core;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
