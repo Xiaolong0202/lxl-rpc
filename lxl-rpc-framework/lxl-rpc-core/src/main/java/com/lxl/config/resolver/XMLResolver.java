@@ -48,6 +48,7 @@ public class XMLResolver {
         try {
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
             InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("LxlRpcConfig.xml");
+            if (inputStream == null) return;
             //禁止校验DTD
             documentBuilder.setEntityResolver((publicId, systemId) -> new InputSource(new StringBufferInputStream("")));
             Document document = documentBuilder.parse(inputStream);
@@ -68,7 +69,7 @@ public class XMLResolver {
             //如果还有其他的新的标签则继续添加新的方法
         } catch (SAXException | IOException | ParserConfigurationException e) {
             log.info("为发现对应的配置文件或者,解析XML文件的时候出现了异常,将选用默认的配置");
-            throw new RuntimeException(e);
+//            throw new RuntimeException(e);
         }
     }
 

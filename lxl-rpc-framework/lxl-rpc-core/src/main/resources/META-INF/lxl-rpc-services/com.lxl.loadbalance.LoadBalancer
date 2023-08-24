@@ -1,3 +1,0 @@
-com.lxl.loadbalance.impl.ConsistentLoadBalancer
-com.lxl.loadbalance.impl.MinimumResponseTimeBalancer
-com.lxl.loadbalance.impl.RoundLoadBalancer

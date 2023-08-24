@@ -63,7 +63,9 @@ public class SpiHandler {
             return (T) objectList.get(0);
         }
         buildCache(clazz);
-        return (T) SPI_IMPLEMENT.get(clazz).get(0);
+        objectList = SPI_IMPLEMENT.get(clazz);
+        if (objectList == null || objectList.size() ==0) return null;
+        return (T) objectList.get(0);
     }
 
     /**
@@ -74,6 +76,7 @@ public class SpiHandler {
         //建立缓存
         String clazzName = clazz.getName();
         List<String> implementList = SPI_CONTENT.get(clazzName);
+        if (implementList == null) return;
 
         List<Object> instanceList = new ArrayList<>();
         //实例化所有的实现并进行缓存

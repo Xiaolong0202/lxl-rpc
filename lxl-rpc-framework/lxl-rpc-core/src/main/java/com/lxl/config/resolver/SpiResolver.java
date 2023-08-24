@@ -19,8 +19,8 @@ public class SpiResolver {
         Compressor compressor = SpiHandler.get(Compressor.class);
         Serializer serializer = SpiHandler.get(Serializer.class);
         //将获取到的实例加载到configuratoin当中
-        configuration.setLoadBalancer(loadBalancer);
-        configuration.setCompressor(compressor);
-        configuration.setSerializer(serializer);
+        if (loadBalancer != null) configuration.setLoadBalancer(loadBalancer);
+        if (compressor != null) configuration.setCompressor(compressor);
+        if (serializer != null) configuration.setSerializer(serializer);
     }
 }
