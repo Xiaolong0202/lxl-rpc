@@ -68,6 +68,9 @@ public class Configuration {
         //编程配置项
     }
 
+    public static void main(String[] args) {
+        new Configuration();
+    }
 
 
 
