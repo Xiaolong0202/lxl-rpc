@@ -5,6 +5,7 @@ import com.lxl.NettyClientBootStrapInitializer;
 import com.lxl.discovery.Registry;
 import com.lxl.enumnation.RequestType;
 import com.lxl.exceptions.NetWorkException;
+import com.lxl.factory.CompressFactory;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import com.lxl.transport.message.request.RequestPayload;
 import io.netty.channel.Channel;
@@ -47,7 +48,7 @@ public class RpcInvocationHandler implements InvocationHandler {
         long requestId = LxlRpcBootStrap.getInstance().getConfiguration().getIdGenerator().getId();
         LxlRpcRequest rpcRequest = LxlRpcRequest.builder()
                 .requestId(requestId)
-                .compressType(LxlRpcBootStrap.getInstance().getConfiguration().getCompressType().ID)
+                .compressType(CompressFactory.getCompressorByName(LxlRpcBootStrap.getInstance().getConfiguration().getCompressType()).getCode())
                 .serializableType(LxlRpcBootStrap.getInstance().getConfiguration().getSerializeType().ID)
                 .requestType(RequestType.REQUEST.ID)
                 .timeStamp(System.currentTimeMillis())
