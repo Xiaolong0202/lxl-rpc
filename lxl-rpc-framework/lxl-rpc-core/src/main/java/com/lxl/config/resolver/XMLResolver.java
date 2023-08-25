@@ -4,8 +4,9 @@ import com.lxl.compress.Compressor;
 import com.lxl.config.Configuration;
 import com.lxl.core.IdGenerator;
 import com.lxl.discovery.RegistryConfig;
-import com.lxl.enumnation.CompressType;
-import com.lxl.enumnation.SerializeType;
+import com.lxl.factory.CompressFactory;
+import com.lxl.factory.ObjectMapper;
+import com.lxl.factory.SerializerFactory;
 import com.lxl.loadbalance.LoadBalancer;
 import com.lxl.serialize.Serializer;
 import lombok.extern.slf4j.Slf4j;
@@ -67,22 +68,30 @@ public class XMLResolver {
 
             RegistryConfig registryConfig = resolveRegistryConfig(document, xPath);
             if (registryConfig != null) configuration.setRegistryConfig(registryConfig);
-
+            //配置序列化类型
             String serializeType = resolveSerializeType(document, xPath);
             if (serializeType !=null)configuration.setSerializeType(serializeType);
+            //读取新的序列化器并将其纳入工厂
+            ObjectMapper<Serializer> serializerObjectMapper = resolveSerializer(document, xPath);
+            if (serializerObjectMapper!=null) {
+                SerializerFactory.addSerializer(serializerObjectMapper);
+//                configuration.setSerializeType(serializerObjectMapper.getName());
+            }
 
-            Serializer serializer = resolveSerializer(document, xPath);
-            if (serializer != null) configuration.setSerializer(serializer);
-
-
+            //配置压缩与解压缩类型
             String compressType = resolveCompressType(document, xPath);
             if (compressType!=null)configuration.setCompressType(compressType);
+            //配置新的compressor并将其纳入工厂
+            ObjectMapper<Compressor> compressorObjectMapper = resolveCompress(document, xPath);
+            if (compressorObjectMapper != null) {
+                CompressFactory.addCompressor(compressorObjectMapper);
+//                configuration.setCompressType(compressorObjectMapper.getName());
+            }
 
-            Compressor compressor = resolveCompress(document, xPath);
-            if (compressor != null) configuration.setCompressor(compressor);
 
             LoadBalancer loadBalancer = resolveLoadBalancer(document, xPath);
             if (loadBalancer != null) configuration.setLoadBalancer(loadBalancer);
+
 
             log.info("从xml当中读取配置成功");
             //如果还有其他的新的标签则继续添加新的方法
@@ -99,9 +108,13 @@ public class XMLResolver {
      * @param xPath
      * @return
      */
-    private Serializer resolveSerializer(Document document, XPath xPath) {
+    private ObjectMapper<Serializer> resolveSerializer(Document document, XPath xPath) {
         String expression = "/configuration/serializer[1]";
-        return parseObject(document, xPath, expression, null);
+        String code = parseAttribute(document, xPath, expression, "code");
+        String name = parseAttribute(document, xPath, expression, "name");
+        Serializer instance = parseObject(document, xPath, expression, null);
+        if (code == null || name == null ||instance == null) return null;
+        return new ObjectMapper<Serializer>(Byte.parseByte(code),name,instance);
     }
 
     /**
@@ -111,9 +124,13 @@ public class XMLResolver {
      * @param xPath
      * @return
      */
-    private Compressor resolveCompress(Document document, XPath xPath) {
+    private ObjectMapper<Compressor> resolveCompress(Document document, XPath xPath) {
         String expression = "/configuration/compressor[1]";
-        return parseObject(document, xPath, expression, null);
+        String code = parseAttribute(document, xPath, expression, "code");
+        String name = parseAttribute(document, xPath, expression, "name");
+        Compressor instance = parseObject(document, xPath, expression, null);
+        if (code == null || name == null ||instance == null) return null;
+        return new ObjectMapper<Compressor>(Byte.parseByte(code),name,instance);
     }
 
     /**
@@ -137,9 +154,8 @@ public class XMLResolver {
      */
     private String resolveCompressType(Document document, XPath xPath) {
         String expression = "/configuration/compressType[1]";
-        String type = parseAttribute(document, xPath, expression, "type");
-        if (type == null) return null;
-        return type.toUpperCase();
+        return parseAttribute(document, xPath, expression, "type");
+
     }
 
     /**
@@ -151,9 +167,7 @@ public class XMLResolver {
      */
     private String resolveSerializeType(Document document, XPath xPath) {
         String expression = "/configuration/serializeType[1]";
-        String type = parseAttribute(document, xPath, expression, "type");
-        if (type == null) return null;
-        return type.toUpperCase();
+        return parseAttribute(document, xPath, expression, "type");
     }
 
     /**

@@ -6,8 +6,8 @@
     <appName>lxl-Rpc-demo</appName>
     <registry url="zookeeper://39.107.52.125:2181"/>
     <!--二选一-->
-    <serializeType type="HESSIAN"/>
-    <serializer class="com.lxl.serialize.impl.HessianSerializerImpl"/>
+    <serializeType type="haisen"/>
+    <serializer class="com.lxl.serialize.impl.HessianSerializerImpl" code="127" name="haisen"/>
     <!--二选一-->
 <!--    <compressType type="ZIP"/>-->
 <!--    <compressor class="com.lxl.compress.impl.GzipCompressImpl"/>-->

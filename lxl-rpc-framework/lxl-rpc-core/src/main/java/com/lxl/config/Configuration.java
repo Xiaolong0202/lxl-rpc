@@ -40,10 +40,10 @@ public class Configuration {
     private IdGenerator idGenerator = new IdGenerator(1L, 2L);
     //序列化的类型
     private String serializeType = "JDK";
-    private Serializer serializer = new HessianSerializerImpl();
+
     //压缩的类型
     private String compressType = "GZIP";
-    private Compressor compressor = new GzipCompressImpl();
+
     //负载均衡策略
     private LoadBalancer loadBalancer = new RoundLoadBalancer();
 
