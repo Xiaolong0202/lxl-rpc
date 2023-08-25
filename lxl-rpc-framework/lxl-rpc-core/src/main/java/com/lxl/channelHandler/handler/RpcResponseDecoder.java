@@ -73,7 +73,7 @@ public class RpcResponseDecoder extends LengthFieldBasedFrameDecoder {
            objectBytes = compressor.decompress(objectBytes);
 
            //反序列化
-           Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(serializeType));
+           Serializer serializer = SerializerFactory.getSerializerByCode(serializeType).getImplement();
            bodyObject = serializer.disSerializer(objectBytes,Object.class);
        }
 

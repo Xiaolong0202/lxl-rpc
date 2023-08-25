@@ -36,7 +36,7 @@ public class RpcResponseToByteEncoder extends MessageToByteEncoder<LxlRpcRespons
     protected void encode(ChannelHandlerContext ctx, LxlRpcResponse msg, ByteBuf out) throws Exception {
         byte[] responseBody = new byte[0];
         if (msg.getObject() != null){
-            Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(msg.getSerializableType()));
+            Serializer serializer = SerializerFactory.getSerializerByCode(msg.getSerializableType()).getImplement();
             responseBody = serializer.serialize(msg.getObject());
             //获取压缩器
             Compressor compressor = CompressFactory.getCompressorByCode(msg.getCompressType()).getImplement();

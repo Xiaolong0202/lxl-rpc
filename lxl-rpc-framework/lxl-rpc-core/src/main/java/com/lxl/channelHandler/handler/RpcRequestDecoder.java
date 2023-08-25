@@ -80,7 +80,7 @@ public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
             requestBody = compressor.decompress(requestBody);
 
             //获取序列化器
-            Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(serializeType));
+            Serializer serializer = SerializerFactory.getSerializerByCode(serializeType).getImplement();
             //反序列化
             requestPayload = serializer.disSerializer(requestBody, RequestPayload.class);
         }

@@ -3,6 +3,8 @@ package com.lxl.core;
 import com.lxl.LxlRpcBootStrap;
 import com.lxl.NettyClientBootStrapInitializer;
 import com.lxl.enumnation.RequestType;
+import com.lxl.factory.CompressFactory;
+import com.lxl.factory.SerializerFactory;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -59,8 +61,8 @@ public class HeartBeatDetector {
                     long requestId = LxlRpcBootStrap.getInstance().getConfiguration().getIdGenerator().getId();
                     LxlRpcRequest rpcRequest = LxlRpcRequest.builder()
                             .requestId(requestId)
-                            .compressType(LxlRpcBootStrap.getInstance().getConfiguration().getCompressType().ID)
-                            .serializableType(LxlRpcBootStrap.getInstance().getConfiguration().getSerializeType().ID)
+                            .compressType(CompressFactory.getCompressorByName(LxlRpcBootStrap.getInstance().getConfiguration().getCompressType()).getCode())
+                            .serializableType(SerializerFactory.getSerializerByName(LxlRpcBootStrap.getInstance().getConfiguration().getCompressType()).getCode())
                             .requestType(RequestType.HEART_BEAT.ID)
                             .timeStamp(System.currentTimeMillis())
                             .build();

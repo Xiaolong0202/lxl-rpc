@@ -36,7 +36,7 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
         byte[] payLoadBytes = new byte[0];
         if (msg.getRequestPayload() != null){
             //获取序列化器
-            Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(msg.getSerializableType()));
+            Serializer serializer = SerializerFactory.getSerializerByCode(msg.getSerializableType()).getImplement();
             //序列化
             payLoadBytes = serializer.serialize(msg.getRequestPayload());
             //获取压缩器

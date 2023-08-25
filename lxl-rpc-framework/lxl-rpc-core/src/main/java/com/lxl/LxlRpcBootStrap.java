@@ -108,7 +108,7 @@ public class LxlRpcBootStrap {
         return this;
     }
 
-    public LxlRpcBootStrap serialize(SerializeType serializeType) {
+    public LxlRpcBootStrap serialize(String serializeType) {
         this.configuration.setSerializeType(serializeType);
         return this;
     }
@@ -189,7 +189,7 @@ public class LxlRpcBootStrap {
         return this;
     }
 
-    public LxlRpcBootStrap compress(CompressType compressType) {
+    public LxlRpcBootStrap compress(String compressType) {
         this.configuration.setCompressType(compressType);
         return this;
     }

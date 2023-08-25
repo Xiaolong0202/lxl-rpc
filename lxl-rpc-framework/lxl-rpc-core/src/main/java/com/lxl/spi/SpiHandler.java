@@ -1,13 +1,12 @@
 package com.lxl.spi;
 
-import com.lxl.loadbalance.LoadBalancer;
+import com.lxl.factory.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author LiuXiaolong
@@ -19,10 +18,12 @@ public class SpiHandler {
 
     public static final String BASE_PATH = "META-INF/lxl-rpc-services/";
 
+    public static final String SEPARATOR = "-";
+
     //定义一个缓存，保存与SPI相关的原始内容
     private static final Map<String, List<String>> SPI_CONTENT = new HashMap<>(16);
     //缓存用存储 接口与实现类
-    private static final Map<Class<?>, List<Object>> SPI_IMPLEMENT = new HashMap<>(16);
+    private static final Map<Class<?>, List<ObjectMapper<?>>> SPI_IMPLEMENT = new HashMap<>(16);
 
     //初始化静态变量 SPI_CONTENT  读取指定文件中的内容并加载至 内存中
     static {
@@ -58,7 +59,7 @@ public class SpiHandler {
      * @param <T>
      */
     public static <T> T get(Class<T> clazz) {
-        List<Object> objectList = SPI_IMPLEMENT.get(clazz);
+        List<ObjectMapper<?>> objectList = SPI_IMPLEMENT.get(clazz);
         if (objectList !=null && objectList.size() > 0){
             return (T) objectList.get(0);
         }
@@ -72,32 +73,26 @@ public class SpiHandler {
      * 构建 Map<Class<?>, List<Object>> SPI_IMPLEMENT  的缓存
      * @param clazz
      */
-    public static void buildCache(Class<?> clazz){
+    public static void buildCache(Class<?> clazz) {
         //建立缓存
         String clazzName = clazz.getName();
         List<String> implementList = SPI_CONTENT.get(clazzName);
         if (implementList == null) return;
 
-        List<Object> instanceList = new ArrayList<>();
+        List<ObjectMapper<?>> instanceList = new ArrayList<>();
         //实例化所有的实现并进行缓存
-        implementList.forEach(implementName -> {
+        for (String implementName : implementList) {
             Class<?> implementClazz = null;
             try {
-                implementClazz = Class.forName(implementName);
+                String[] split = implementName.split(SEPARATOR);
+                implementClazz = Class.forName(split[2]);
                 Object instance = implementClazz.getConstructor().newInstance();
-                instanceList.add(instance);
+                instanceList.add(new ObjectMapper<>(Byte.parseByte(split[0]), split[1], instance));
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException |
                      InvocationTargetException e) {
-                log.error("实例化【】的时候出现了异常",implementName,e);
+                log.error("实例化【】的时候出现了异常", implementName, e);
             }
-
-        });
-        SPI_IMPLEMENT.put(clazz,instanceList);
-    }
-
-
-    public static void main(String[] args) {
-        File file = new File("C:\\Users\\Administrator\\IdeaProjects\\lxl-rpc\\lxl-rpc-framework\\lxl-rpc-core\\src\\test\\java");
-        System.out.println(SPI_CONTENT);
+            SPI_IMPLEMENT.put(clazz, instanceList);
+        }
     }
 }
