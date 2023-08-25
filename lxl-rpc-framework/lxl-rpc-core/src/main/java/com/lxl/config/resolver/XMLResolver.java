@@ -35,7 +35,6 @@ import java.lang.reflect.InvocationTargetException;
 public class XMLResolver {
 
 
-
     /**
      * 从配置文件读取信息
      *
@@ -55,16 +54,36 @@ public class XMLResolver {
             //构建Xpath
             XPathFactory xPathFactory = XPathFactory.newInstance();
             XPath xPath = xPathFactory.newXPath();
+            //todo set属性之前先需要判断resolve的结果是否为NULL
             //解析所有的属性
-            configuration.setPORT(resolvePort(document, xPath));
-            configuration.setAppName(resolveAppName(document, xPath));
-            configuration.setIdGenerator(resolveIdGenerator(document, xPath));
-            configuration.setRegistryConfig(resolveRegistryConfig(document, xPath));
-            configuration.setSerializeType(resolveSerializeType(document, xPath));
-            configuration.setSerializer(resolveSerializer(document, xPath));
-            configuration.setCompressType(resolveCompressType(document, xPath));
-            configuration.setCompressor(resolveCompress(document, xPath));
-            configuration.setLoadBalancer(resolveLoadBalancer(document, xPath));
+            Integer port = resolvePort(document, xPath);
+            if (port != null) configuration.setPORT(port);
+
+            String appName = resolveAppName(document, xPath);
+            if (appName != null) configuration.setAppName(appName);
+
+            IdGenerator idGenerator = resolveIdGenerator(document, xPath);
+            if (idGenerator != null) configuration.setIdGenerator(idGenerator);
+
+            RegistryConfig registryConfig = resolveRegistryConfig(document, xPath);
+            if (registryConfig != null) configuration.setRegistryConfig(registryConfig);
+
+            String serializeType = resolveSerializeType(document, xPath);
+            if (serializeType !=null)configuration.setSerializeType(serializeType);
+
+            Serializer serializer = resolveSerializer(document, xPath);
+            if (serializer != null) configuration.setSerializer(serializer);
+
+
+            String compressType = resolveCompressType(document, xPath);
+            if (compressType!=null)configuration.setCompressType(compressType);
+
+            Compressor compressor = resolveCompress(document, xPath);
+            if (compressor != null) configuration.setCompressor(compressor);
+
+            LoadBalancer loadBalancer = resolveLoadBalancer(document, xPath);
+            if (loadBalancer != null) configuration.setLoadBalancer(loadBalancer);
+
             log.info("从xml当中读取配置成功");
             //如果还有其他的新的标签则继续添加新的方法
         } catch (SAXException | IOException | ParserConfigurationException e) {
@@ -75,24 +94,26 @@ public class XMLResolver {
 
     /**
      * 解析序列化器
+     *
      * @param document
      * @param xPath
      * @return
      */
     private Serializer resolveSerializer(Document document, XPath xPath) {
         String expression = "/configuration/serializer[1]";
-        return parseObject(document,xPath,expression,null);
+        return parseObject(document, xPath, expression, null);
     }
 
     /**
      * 解析解/压缩器
+     *
      * @param document
      * @param xPath
      * @return
      */
     private Compressor resolveCompress(Document document, XPath xPath) {
         String expression = "/configuration/compressor[1]";
-        return parseObject(document,xPath,expression,null);
+        return parseObject(document, xPath, expression, null);
     }
 
     /**
@@ -117,6 +138,7 @@ public class XMLResolver {
     private String resolveCompressType(Document document, XPath xPath) {
         String expression = "/configuration/compressType[1]";
         String type = parseAttribute(document, xPath, expression, "type");
+        if (type == null) return null;
         return type.toUpperCase();
     }
 
@@ -130,6 +152,7 @@ public class XMLResolver {
     private String resolveSerializeType(Document document, XPath xPath) {
         String expression = "/configuration/serializeType[1]";
         String type = parseAttribute(document, xPath, expression, "type");
+        if (type == null) return null;
         return type.toUpperCase();
     }
 
@@ -143,11 +166,13 @@ public class XMLResolver {
     private RegistryConfig resolveRegistryConfig(Document document, XPath xPath) {
         String expression = "/configuration/registry[1]";
         String connextString = parseAttribute(document, xPath, expression, "url");
+        if (connextString == null) return null;
         return new RegistryConfig(connextString);
     }
 
     /**
      * 解析ID发号器
+     *
      * @param document
      * @param xPath
      * @return
@@ -178,14 +203,16 @@ public class XMLResolver {
      * @param xPath
      * @return
      */
-    private int resolvePort(Document document, XPath xPath) {
+    private Integer resolvePort(Document document, XPath xPath) {
         String expression = "/configuration/port[1]";
         String port = parseNodeContent(document, xPath, expression);
+        if (port == null) return null;
         return Integer.parseInt(port);
     }
 
     /**
      * 解析一个结点返回一个对象实例
+     *
      * @param document
      * @param xPath
      * @param expression
@@ -199,6 +226,10 @@ public class XMLResolver {
         try {
             //构建xpath表达式.XPathConstants.STRING指定的返回的类型
             Node classNode = (Node) xPath.evaluate(expression, document, XPathConstants.NODE);
+            if (classNode == null) {
+                log.debug("【{}】节点在XML配置文件当中不存在", expression);
+                return null;
+            }
             Node classNameAttr = classNode.getAttributes().getNamedItem("class");
             String className = classNameAttr.getNodeValue();
             Class<?> aClass = Class.forName(className);
@@ -218,6 +249,7 @@ public class XMLResolver {
 
     /**
      * 解析某个节点的属性
+     *
      * @param document
      * @param xPath
      * @param expression
@@ -228,6 +260,10 @@ public class XMLResolver {
         try {
             //构建xpath表达式.XPathConstants.STRING指定的返回的类型
             Node node = (Node) xPath.evaluate(expression, document, XPathConstants.NODE);
+            if (node == null) {
+                log.debug("【{}】节点在XML配置文件当中不存在", expression);
+                return null;
+            }
             Node attr = node.getAttributes().getNamedItem(attrName);
             return attr.getNodeValue();
         } catch (XPathExpressionException e) {
@@ -238,6 +274,7 @@ public class XMLResolver {
 
     /**
      * 解析某个节点的内容
+     *
      * @param document
      * @param xPath
      * @param expression
@@ -247,6 +284,10 @@ public class XMLResolver {
         try {
             //构建xpath表达式.XPathConstants.STRING指定的返回的类型
             Node node = (Node) xPath.evaluate(expression, document, XPathConstants.NODE);
+            if (node == null) {
+                log.debug("【{}】节点在XML配置文件当中不存在", expression);
+                return null;
+            }
             return node.getTextContent();
         } catch (XPathExpressionException e) {
             log.error("解析表达式时发生了异常");

@@ -23,6 +23,10 @@ public class CompressFactory {
     private static final Map<String, ObjectMapper<Compressor>> COMPRESS_NAME_CACHE = new ConcurrentHashMap<>(8);
     private static final Map<Byte, ObjectMapper<Compressor>> COMPRESS_CODE_CACHE = new ConcurrentHashMap<>(8);
 
+    /**
+     * 给工厂中新增压缩器
+     * @param compressorObjectMapper
+     */
     public static void addCompressor(ObjectMapper<Compressor> compressorObjectMapper){
         COMPRESS_NAME_CACHE.put(compressorObjectMapper.getName(),compressorObjectMapper);
         COMPRESS_CODE_CACHE.put(compressorObjectMapper.getCode(),compressorObjectMapper);

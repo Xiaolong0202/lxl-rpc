@@ -1,5 +1,6 @@
 package com.lxl.spi;
 
+import com.lxl.exceptions.SpiException;
 import com.lxl.factory.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,15 +59,25 @@ public class SpiHandler {
      * @return
      * @param <T>
      */
-    public static <T> T get(Class<T> clazz) {
+    public synchronized static <T> List<ObjectMapper<T>> getList(Class<T> clazz) {
         List<ObjectMapper<?>> objectList = SPI_IMPLEMENT.get(clazz);
         if (objectList !=null && objectList.size() > 0){
-            return (T) objectList.get(0);
+        return objectList.stream().map(objectMapper -> {
+              return   (ObjectMapper<T>)objectMapper;
+            }).toList();
         }
+
+
         buildCache(clazz);
+
+
         objectList = SPI_IMPLEMENT.get(clazz);
-        if (objectList == null || objectList.size() ==0) return null;
-        return (T) objectList.get(0);
+        if (objectList !=null && objectList.size() > 0){
+            return objectList.stream().map(objectMapper -> {
+                return   (ObjectMapper<T>)objectMapper;
+            }).toList();
+        }
+        return null;
     }
 
     /**
@@ -85,9 +96,12 @@ public class SpiHandler {
             Class<?> implementClazz = null;
             try {
                 String[] split = implementName.split(SEPARATOR);
+                if (split.length!=3)throw new SpiException("您创建的SPI文件不合法");
                 implementClazz = Class.forName(split[2]);
+                byte code = Byte.parseByte(split[0]);
+                String name = split[1];
                 Object instance = implementClazz.getConstructor().newInstance();
-                instanceList.add(new ObjectMapper<>(Byte.parseByte(split[0]), split[1], instance));
+                instanceList.add(new ObjectMapper<>(code, name, instance));
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException |
                      InvocationTargetException e) {
                 log.error("实例化【】的时候出现了异常", implementName, e);

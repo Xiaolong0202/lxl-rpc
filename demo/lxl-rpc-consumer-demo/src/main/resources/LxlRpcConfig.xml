@@ -9,8 +9,8 @@
     <serializeType type="HESSIAN"/>
     <serializer class="com.lxl.serialize.impl.HessianSerializerImpl"/>
     <!--二选一-->
-    <compressType type="ZIP"/>
-    <compressor class="com.lxl.compress.impl.GzipCompressImpl"/>
+<!--    <compressType type="ZIP"/>-->
+<!--    <compressor class="com.lxl.compress.impl.GzipCompressImpl"/>-->
     <!--二选一-->
 <!--    <loadBalancerType type="RoundLoabing"/>-->
     <loadBalancer class="com.lxl.loadbalance.impl.RoundLoadBalancer"/>
