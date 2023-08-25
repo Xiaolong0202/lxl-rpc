@@ -68,7 +68,7 @@ public class RpcResponseDecoder extends LengthFieldBasedFrameDecoder {
         Object bodyObject = null;
        if (objectBytes.length > 0){
            //获取压缩器
-           Compressor compressor = CompressFactory.getSerializer(CompressType.getCompressType(compressType));
+           Compressor compressor = CompressFactory.getCompressorByCode(compressType).getImplement();
            //解压缩
            objectBytes = compressor.decompress(objectBytes);
 

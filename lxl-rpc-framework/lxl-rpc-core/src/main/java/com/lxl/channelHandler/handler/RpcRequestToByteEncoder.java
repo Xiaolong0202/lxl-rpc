@@ -40,7 +40,7 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
             //序列化
             payLoadBytes = serializer.serialize(msg.getRequestPayload());
             //获取压缩器
-            Compressor compressor = CompressFactory.getSerializer(CompressType.getCompressType(msg.getCompressType()));
+            Compressor compressor = CompressFactory.getCompressorByCode(msg.getCompressType()).getImplement();
             //压缩
             payLoadBytes = compressor.compress(payLoadBytes);
         }

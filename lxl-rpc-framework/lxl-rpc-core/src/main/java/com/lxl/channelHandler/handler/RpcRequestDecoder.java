@@ -75,7 +75,7 @@ public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
             byteBuf.readBytes(requestBody);
 
             //获取压缩器
-            Compressor compressor = CompressFactory.getSerializer(CompressType.getCompressType(compressType));
+            Compressor compressor = CompressFactory.getCompressorByCode(compressType).getImplement();
             //解压
             requestBody = compressor.decompress(requestBody);
 

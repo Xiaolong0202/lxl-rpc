@@ -39,7 +39,7 @@ public class RpcResponseToByteEncoder extends MessageToByteEncoder<LxlRpcRespons
             Serializer serializer = SerializerFactory.getSerializer(SerializeType.getSerializeType(msg.getSerializableType()));
             responseBody = serializer.serialize(msg.getObject());
             //获取压缩器
-            Compressor compressor = CompressFactory.getSerializer(CompressType.getCompressType(msg.getCompressType()));
+            Compressor compressor = CompressFactory.getCompressorByCode(msg.getCompressType()).getImplement();
             //压缩
             responseBody = compressor.compress(responseBody);
         }

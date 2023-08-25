@@ -114,10 +114,10 @@ public class XMLResolver {
      * @param xPath
      * @return
      */
-    private CompressType resolveCompressType(Document document, XPath xPath) {
+    private String resolveCompressType(Document document, XPath xPath) {
         String expression = "/configuration/compressType[1]";
         String type = parseAttribute(document, xPath, expression, "type");
-        return CompressType.valueOf(type.toUpperCase());
+        return type.toUpperCase();
     }
 
     /**
@@ -127,10 +127,10 @@ public class XMLResolver {
      * @param xPath
      * @return
      */
-    private SerializeType resolveSerializeType(Document document, XPath xPath) {
+    private String resolveSerializeType(Document document, XPath xPath) {
         String expression = "/configuration/serializeType[1]";
         String type = parseAttribute(document, xPath, expression, "type");
-        return SerializeType.valueOf(type.toUpperCase());
+        return type.toUpperCase();
     }
 
     /**
