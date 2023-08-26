@@ -35,6 +35,5 @@ public class SpiResolver {
             serializerWrapperList.forEach(SerializerFactory::addSerializer);
             configuration.setSerializeType(serializerWrapperList.get(0).getName());
         }
-        System.out.println();
     }
 }

@@ -15,6 +15,7 @@
         <module>demo/lxl-rpc-provider-demo</module>
         <module>demo/lxl-rpc-consumer-demo</module>
         <module>demo/lxl-rpc-api</module>
+        <module>test-myspi-impl</module>
     </modules>
 
     <properties>
