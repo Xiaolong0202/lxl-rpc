@@ -1,9 +1,10 @@
-package com.lxl.protection;
+package com.lxl.protection.circuit;
 
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ *
+ * 异常比例熔断器
  * @Author LiuXiaolong
  * @Description lxl-rpc
  * @DateTime 2023/8/28  17:27
@@ -23,19 +24,19 @@ public class CircuitBreaker {
     private AtomicInteger errorRequestCount = new AtomicInteger(0);
 
 
-    private final int maxErrorRequestCount;
-
+    /**
+     *  异常比例阈值
+     */
     private final double maxErrorRate;
 
     /**
-     * 通过请求率而导致熔断,所需要的最小请求数
+     * 即允许通过的最小请求数，在该数量内不发生熔断
      */
-    private final int stopByRateMinRequestNum;
+    private final int minimumRequests;
 
-    public CircuitBreaker(int maxErrorRequestCount, double maxErrorRate,int stopByRateMinRequestNum) {
-        this.maxErrorRequestCount = maxErrorRequestCount;
+    public CircuitBreaker(double maxErrorRate,int minimumRequests) {
         this.maxErrorRate = maxErrorRate;
-        this.stopByRateMinRequestNum = stopByRateMinRequestNum;
+        this.minimumRequests = minimumRequests;
     }
 
     /**
@@ -56,12 +57,9 @@ public class CircuitBreaker {
         this.errorRequestCount.incrementAndGet();
     }
 
-    public boolean isOpen() {
+    public boolean isBreak() {
         if (!this.isOpen) {
-            if (errorRequestCount.get() >= maxErrorRequestCount) {
-                this.isOpen = true;
-            }
-            if (errorRequestCount.get() > 0 && requestCount.get() > 0  && requestCount.get() >= stopByRateMinRequestNum
+            if (errorRequestCount.get() > 0 && requestCount.get() > 0  && requestCount.get() >= minimumRequests
                     && (double) errorRequestCount.get() / (double) requestCount.get() > maxErrorRate){
                 this.isOpen =true;
             }

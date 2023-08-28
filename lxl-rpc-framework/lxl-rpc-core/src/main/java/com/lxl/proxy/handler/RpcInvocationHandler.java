@@ -5,9 +5,11 @@ import com.lxl.NettyClientBootStrapInitializer;
 import com.lxl.annotation.ReTry;
 import com.lxl.discovery.Registry;
 import com.lxl.enumnation.RequestType;
+import com.lxl.exceptions.CircuitBreakerException;
 import com.lxl.exceptions.NetWorkException;
 import com.lxl.factory.CompressFactory;
 import com.lxl.factory.SerializerFactory;
+import com.lxl.protection.circuit.CircuitBreaker;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import com.lxl.transport.message.request.RequestPayload;
 import io.netty.channel.Channel;
@@ -15,10 +17,12 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -70,6 +74,7 @@ public class RpcInvocationHandler implements InvocationHandler {
             tryTimes = reTryAnnotation.tryTimes();
             intervalTime = reTryAnnotation.intervalTime();
         }
+        CircuitBreaker circuitBreaker = null;
 
         while (true) {
 
@@ -99,15 +104,36 @@ public class RpcInvocationHandler implements InvocationHandler {
                 if (log.isDebugEnabled()) {
                     log.debug("服务调用方，返回了服务【{}】的可用主机【{}】", interfaceRef.getName(), inetSocketAddress.getHostString());
                 }
-
-
                 //使用netty连接服务器 发送服务的名字+方法的名字+参数列表,得到结果
                 Channel channel = this.getAvaliableChanel(inetSocketAddress);
+
+                //---------获取断路器
+                SocketAddress socketAddress = channel.remoteAddress();
+               circuitBreaker  = LxlRpcBootStrap.SERVICE_CIRCUIT_BREAKER.get(socketAddress);
+                if (circuitBreaker == null){
+                    circuitBreaker = new CircuitBreaker(0.4, 10);
+                    LxlRpcBootStrap.SERVICE_CIRCUIT_BREAKER.put(socketAddress, circuitBreaker);
+                }
+
+                if (circuitBreaker.isBreak()){
+                    //如果是断路状态,则休眠一段时间再解除熔断状态
+                    CircuitBreaker finalCircuitBreaker = circuitBreaker;
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            finalCircuitBreaker.reset();
+                        }
+                    },5000);
+                    throw new CircuitBreakerException("服务 "+interfaceRef.getName()+'.'+method.getName()+":"+socketAddress.toString()+" 熔断需要稍后再试");
+                }
+
 
                 LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.put(requestId, new CompletableFuture<>());
                 CompletableFuture<Object> objectCompletableFuture = LxlRpcBootStrap.COMPLETABLE_FUTURE_CACHE.get(requestId);
                 //发送消息,请求
                 ChannelFuture channelFuture = channel.writeAndFlush(rpcRequest);
+                //熔断器记录请求
+                circuitBreaker.countRequest();
                 //添加监听器
                 channelFuture.addListener((ChannelFutureListener) future -> {
                     if (!future.isSuccess()) {
@@ -122,6 +148,12 @@ public class RpcInvocationHandler implements InvocationHandler {
                 return objectCompletableFuture.get(3, TimeUnit.SECONDS);//如果返回时间超过三秒则视为相应失败
 
             } catch (Exception exception) {
+                //熔断器记录失败的请求
+                circuitBreaker.countErrorRequest();
+                if ( exception instanceof CircuitBreakerException){
+                    //如果是熔断异常则直接抛出
+                    break;
+                }
                 tryTimes--;
                 if (tryTimes < 0) {
                     log.error("对方法【{}】进行远程调用的时候，重试【{}】次，任然不可调用，放弃调用 ", method.getName(), reTryAnnotation.tryTimes() - tryTimes, exception);
@@ -167,4 +199,5 @@ public class RpcInvocationHandler implements InvocationHandler {
         if (channel == null) throw new NetWorkException("Netty获取channel对象实例失败");
         return channel;
     }
+
 }

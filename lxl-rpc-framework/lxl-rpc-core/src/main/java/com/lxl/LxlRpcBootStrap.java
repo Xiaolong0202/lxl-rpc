@@ -8,6 +8,7 @@ import com.lxl.config.Configuration;
 import com.lxl.core.HeartBeatDetector;
 import com.lxl.discovery.RegistryConfig;
 import com.lxl.loadbalance.LoadBalancer;
+import com.lxl.protection.circuit.CircuitBreaker;
 import com.lxl.protection.rateLimite.RateLimiter;
 import com.lxl.protection.rateLimite.impl.TokenBuketRateLimiter;
 import com.lxl.transport.message.request.LxlRpcRequest;
@@ -50,6 +51,7 @@ public class  LxlRpcBootStrap {
 
     public static final Map<SocketAddress, RateLimiter> IP_RATE_LIMITER= new ConcurrentHashMap<>(16);
 
+    public static final Map<SocketAddress, CircuitBreaker> SERVICE_CIRCUIT_BREAKER = new ConcurrentHashMap<>(16);
 
     //是一个单例类
     private LxlRpcBootStrap() {
