@@ -1,9 +1,6 @@
-package com.lxl.protection;
+package com.lxl.protection.rateLimite.impl;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import com.lxl.protection.rateLimite.RateLimiter;
 
 /**
  * 基于令牌桶算法的限流器,以固定速率向容器当中放入令牌，若没有则拒绝访问
@@ -12,7 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @Description lxl-rpc
  * @DateTime 2023/8/27  2:19
  **/
-public class TokenBuketRateLimiter {
+public class TokenBuketRateLimiter implements RateLimiter {
 
     //令牌的数量
     private int tokens;
@@ -61,12 +58,4 @@ public class TokenBuketRateLimiter {
         }
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        TokenBuketRateLimiter rateLimiter = new TokenBuketRateLimiter(10, 10);
-        rateLimiter.allowRequest();
-        for (int i = 0; i < 1000; i++) {
-            Thread.sleep(10);
-            System.out.println("rateLimiter.allowRequest() = " + rateLimiter.allowRequest());
-        }
-    }
 }

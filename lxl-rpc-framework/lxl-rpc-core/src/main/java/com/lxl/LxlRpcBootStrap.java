@@ -7,9 +7,9 @@ import com.lxl.channelHandler.handler.RpcResponseToByteEncoder;
 import com.lxl.config.Configuration;
 import com.lxl.core.HeartBeatDetector;
 import com.lxl.discovery.RegistryConfig;
-import com.lxl.enumnation.CompressType;
-import com.lxl.enumnation.SerializeType;
 import com.lxl.loadbalance.LoadBalancer;
+import com.lxl.protection.rateLimite.RateLimiter;
+import com.lxl.protection.rateLimite.impl.TokenBuketRateLimiter;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -33,7 +34,7 @@ import java.util.regex.Matcher;
  * 启动引导
  */
 @Slf4j
-public class LxlRpcBootStrap {
+public class  LxlRpcBootStrap {
     //维护一个全局的配置中心
     private Configuration configuration;
 
@@ -46,6 +47,8 @@ public class LxlRpcBootStrap {
 
     //用于存放方法调用时候的请求
     public static final ThreadLocal<LxlRpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
+
+    public static final Map<SocketAddress, RateLimiter> IP_RATE_LIMITER= new ConcurrentHashMap<>(16);
 
 
     //是一个单例类

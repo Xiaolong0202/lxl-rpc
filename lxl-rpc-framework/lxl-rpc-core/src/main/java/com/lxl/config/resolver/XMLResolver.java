@@ -55,7 +55,6 @@ public class XMLResolver {
             //构建Xpath
             XPathFactory xPathFactory = XPathFactory.newInstance();
             XPath xPath = xPathFactory.newXPath();
-            //todo set属性之前先需要判断resolve的结果是否为NULL
             //解析所有的属性
             Integer port = resolvePort(document, xPath);
             if (port != null) configuration.setPORT(port);
