@@ -20,10 +20,27 @@ import java.util.concurrent.TimeUnit;
 public class ReferenceConfig <T>{
     private Class<T> interfaceRef;
 
+    //应用的分组
+    private String group = "default";
+
     private Registry registry;
+
+
+    public ReferenceConfig(Class<T> interfaceRef, String group) {
+        this.interfaceRef = interfaceRef;
+        this.group = group;
+    }
 
     public Registry getRegistry() {
         return registry;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
     }
 
     public void setRegistry(Registry registry) {
@@ -42,7 +59,7 @@ public class ReferenceConfig <T>{
         //此处应当使用动态代理完成了部分工作,生成代理对象
         Object helloProxy = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader()
                 , new Class[]{interfaceRef}
-                , new RpcInvocationHandler(interfaceRef,registry));
+                , new RpcInvocationHandler(registry,interfaceRef,group));
         return (T) helloProxy;
     }
 }

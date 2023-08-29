@@ -10,7 +10,6 @@ import com.lxl.discovery.RegistryConfig;
 import com.lxl.loadbalance.LoadBalancer;
 import com.lxl.protection.circuit.CircuitBreaker;
 import com.lxl.protection.rateLimite.RateLimiter;
-import com.lxl.protection.rateLimite.impl.TokenBuketRateLimiter;
 import com.lxl.transport.message.request.LxlRpcRequest;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -130,8 +129,9 @@ public class  LxlRpcBootStrap {
      * @return
      */
     public LxlRpcBootStrap publish(ServiceConfig<?> service) {
-        //使用了抽象注册中心的概念
+        //使用了抽象注册中心的概念,将服务注册到服务中心
         this.configuration.getRegistryConfig().getRegistry().register(service);
+        //注册完成之后就开始发送心跳请求
         SERVICE_CONFIG_CACHE.put(service.getInterface().getName(), service);
         return this;
     }
@@ -190,7 +190,7 @@ public class  LxlRpcBootStrap {
     public LxlRpcBootStrap reference(ReferenceConfig<?> referenceConfig) {
         //在这个方法当中获取对应的配置项，用来配置reference,将来使用get方法的时候就可以获取代理对象
         referenceConfig.setRegistry(this.configuration.getRegistryConfig().getRegistry());
-        HeartBeatDetector.detectorHeartBeat(referenceConfig.getInterface().getName());
+        HeartBeatDetector.detectorHeartBeat(referenceConfig.getInterface().getName(),referenceConfig.getGroup());
         return this;
     }
 
@@ -224,17 +224,22 @@ public class  LxlRpcBootStrap {
         for (Class<?> clazz : classList) {
             Class<?>[] clazzInterfaces = clazz.getInterfaces();
             Object clazzInstance;
+            //首先通过反射获取实例对象
             try {
                clazzInstance = clazz.getConstructor().newInstance();//使用空参的方法进行构造一个实例
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
+            //再通过反射获取实例对象的分组信息
+            LxlRpcApi lxlRpcApi = clazz.getAnnotation(LxlRpcApi.class);
+            String group = lxlRpcApi.group();
 
             for (Class<?> clazzInterface : clazzInterfaces) {
                 ServiceConfig<Object> serviceConfig = new ServiceConfig<>();
                 serviceConfig.setRef(clazzInstance);
                 serviceConfig.setInterface(clazzInterface);
+                serviceConfig.setGroup(group);
                 this.publish(serviceConfig);
                 if (log.isDebugEnabled()){
                     log.debug("---->已经通过包扫描，将服务【{}】发布",serviceConfig.getInterface().getName());

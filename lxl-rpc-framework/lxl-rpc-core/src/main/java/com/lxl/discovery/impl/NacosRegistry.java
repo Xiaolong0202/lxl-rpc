@@ -16,7 +16,7 @@ public class NacosRegistry implements Registry {
     }
 
     @Override
-    public List<InetSocketAddress> lookup(String serviceName) {
+    public List<InetSocketAddress> lookup(String serviceName, String group) {
         return null;
     }
 }

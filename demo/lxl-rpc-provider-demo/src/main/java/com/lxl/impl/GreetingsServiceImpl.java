@@ -3,7 +3,7 @@ package com.lxl.impl;
 import com.lxl.GreetingsService;
 import com.lxl.annotation.LxlRpcApi;
 
-@LxlRpcApi
+@LxlRpcApi(group = "primary")
 public class GreetingsServiceImpl implements GreetingsService {
     @Override
     public String sayHello(String name) {

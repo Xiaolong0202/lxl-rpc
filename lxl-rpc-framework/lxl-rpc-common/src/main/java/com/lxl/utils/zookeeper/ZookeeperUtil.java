@@ -4,6 +4,7 @@ import com.lxl.Constant;
 import com.lxl.exceptions.ZookeeperException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.*;
+import org.apache.zookeeper.data.Stat;
 
 import java.io.IOException;
 import java.util.List;
@@ -56,7 +57,9 @@ public class ZookeeperUtil {
      */
     public static boolean createZookeeperNode(ZooKeeper zookeeper,ZookeeperNode node,Watcher watcher,CreateMode mode){
         try {
-            if (zookeeper.exists(node.getNodePath(),watcher)==null){
+            Stat exists = zookeeper.exists(node.getNodePath(), watcher);
+            if (exists ==null){
+                System.out.println("exists = " + exists);
                 String res= zookeeper.create(node.getNodePath(),node.getData(), ZooDefs.Ids.OPEN_ACL_UNSAFE, mode);
                 log.info("节点【{}】,已经创建成功",res);
                 return true;

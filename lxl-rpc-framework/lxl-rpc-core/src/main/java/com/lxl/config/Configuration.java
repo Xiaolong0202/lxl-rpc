@@ -29,6 +29,7 @@ public class Configuration {
     //配置信息-->端口号
     private int PORT = 8080;
 
+
     //应用程序的名字
     private String appName = "default";
 

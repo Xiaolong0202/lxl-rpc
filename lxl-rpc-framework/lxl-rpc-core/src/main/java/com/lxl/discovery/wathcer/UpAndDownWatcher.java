@@ -18,13 +18,19 @@ import java.util.List;
  **/
 @Slf4j
 public class UpAndDownWatcher implements Watcher {
+
+    private String group;
+    public UpAndDownWatcher(String group) {
+        this.group = group;
+    }
+
     @Override
     public void process(WatchedEvent event) {
         System.out.println(event.getType());
         if (event.getType() == Event.EventType.NodeChildrenChanged){
             if (log.isDebugEnabled())log.debug("检测到有服务上|下线");
             String serviceName  = getServiceName(event.getPath());
-            List<InetSocketAddress> inetSocketAddressList = LxlRpcBootStrap.getInstance().getConfiguration().getRegistryConfig().getRegistry().lookup(serviceName);
+            List<InetSocketAddress> inetSocketAddressList = LxlRpcBootStrap.getInstance().getConfiguration().getRegistryConfig().getRegistry().lookup(serviceName, group);
             //处理上线的结点，
             for (InetSocketAddress inetSocketAddress : inetSocketAddressList) {
                 //新增的结点

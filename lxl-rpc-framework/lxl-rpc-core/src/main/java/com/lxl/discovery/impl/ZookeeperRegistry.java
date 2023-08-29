@@ -11,8 +11,6 @@ import com.lxl.utils.zookeeper.ZookeeperNode;
 import com.lxl.utils.zookeeper.ZookeeperUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.net.InetSocketAddress;
@@ -34,10 +32,15 @@ public class ZookeeperRegistry extends AbstractRegistry {
         //服务名称的结点，是一个持久的结点
         String parentNode = Constant.BASE_PROVIDER+'/'+service.getInterface().getName();
         ZookeeperUtil.createZookeeperNode(zooKeeper,new ZookeeperNode(parentNode,null),null, CreateMode.PERSISTENT);
+        //创建分组
+        parentNode += '/'+service.getGroup();
+        ZookeeperUtil.createZookeeperNode(zooKeeper,new ZookeeperNode(parentNode,null),null, CreateMode.PERSISTENT);
         if (log.isDebugEnabled()){
-            log.debug("服务{},已经被注册",service.getInterface().getName());
+            log.debug("服务{},已经注册",service.getInterface().getName());
         }
-        //创建本机的临时节点，也就是ip地址什么的, ip:port,先写死8088
+
+
+        //创建本机的临时节点，也就是ip地址什么
         //服务提供方的端口一般自己设定
         //ip我们使用的是局域网ip
         String ipAddr =  NetUtil.getLocalHostExactAddress();
@@ -50,14 +53,15 @@ public class ZookeeperRegistry extends AbstractRegistry {
      * 返回所有可用的服务列表
      *
      * @param serviceName
+     * @param group
      * @return
      */
     @Override
-    public List<InetSocketAddress> lookup(String serviceName) {
+    public List<InetSocketAddress> lookup(String serviceName, String group) {
         //找到对应的结点
-        String serviceNode = Constant.BASE_PROVIDER+'/'+serviceName;
+        String serviceNode = Constant.BASE_PROVIDER+'/'+serviceName+'/'+group;
         //从zk中获取它的子节点
-        List<String> children = ZookeeperUtil.getChildren(zooKeeper, serviceNode,new UpAndDownWatcher());
+        List<String> children = ZookeeperUtil.getChildren(zooKeeper, serviceNode,new UpAndDownWatcher(group));
         //将其封装成InetSocketAddress
         List<InetSocketAddress> inetSocketAddressList = children.stream().map(ipAndPort -> {
             String[] split = ipAndPort.split(":");

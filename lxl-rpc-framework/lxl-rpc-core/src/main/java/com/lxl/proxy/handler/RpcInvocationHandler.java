@@ -35,16 +35,17 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class RpcInvocationHandler implements InvocationHandler {
 
+    private Registry registry;
 
     private Class interfaceRef;
 
-    private Registry registry;
+    private String group;
 
-    public RpcInvocationHandler(Class interfaceRef, Registry registry) {
-        this.interfaceRef = interfaceRef;
+    public RpcInvocationHandler(Registry registry, Class interfaceRef, String group) {
         this.registry = registry;
+        this.interfaceRef = interfaceRef;
+        this.group = group;
     }
-
 
     /**
      * 所有的方法调用都会经过该节点,所以直接对这个方法中所有的代码进行try catch
@@ -98,7 +99,7 @@ public class RpcInvocationHandler implements InvocationHandler {
                 //从注册中心找一个可用的服务
 
                 //尝试使用负载均衡器来。选取一个可用的结点
-                InetSocketAddress inetSocketAddress = LxlRpcBootStrap.getInstance().getConfiguration().getLoadBalancer().selectServiceAddr(interfaceRef.getName());
+                InetSocketAddress inetSocketAddress = LxlRpcBootStrap.getInstance().getConfiguration().getLoadBalancer().selectServiceAddr(interfaceRef.getName(),group);
                 System.out.println("inetSocketAddress = 选择的结点：：：：：：：：：：：：：：：：：：：：：：：" + inetSocketAddress);
 
                 if (log.isDebugEnabled()) {
@@ -204,4 +205,7 @@ public class RpcInvocationHandler implements InvocationHandler {
         return channel;
     }
 
+
+
 }
+

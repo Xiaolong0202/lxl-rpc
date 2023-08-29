@@ -8,8 +8,7 @@ import com.lxl.enumnation.SerializeType;
 public class Application {
     public static void main(String[] args) {
         //想尽一切办法获取代理对象,使用对象对其进行封装
-        ReferenceConfig<GreetingsService> referenceConfig = new ReferenceConfig();
-        referenceConfig.setInterface(GreetingsService.class);
+        ReferenceConfig<GreetingsService> referenceConfig = new ReferenceConfig<>(GreetingsService.class,"primary");
 
         LxlRpcBootStrap.getInstance()
 //                .application("first-rpc-consumer")
