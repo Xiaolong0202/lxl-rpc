@@ -64,7 +64,7 @@ public class RpcResponseDecoder extends LengthFieldBasedFrameDecoder {
         //请求体
         byte[] objectBytes = new byte[(int) (fullLen - headLen)];
         in.readBytes(objectBytes);
-        System.out.println(objectBytes.length);
+        System.out.println("objectBytes.length = " + objectBytes.length);
         Object bodyObject = null;
        if (objectBytes.length > 0){
            //获取压缩器

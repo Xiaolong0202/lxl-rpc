@@ -18,23 +18,22 @@ public class Application {
 //                .compress(CompressType.GZIP)
                 .reference(referenceConfig);
 
-        //代理都做了什么  连接注册中心  获取服务列表  选择一个服务进行连接 发送请求（接口名，参数列表）
+        //代理都  连接注册中心  获取服务列表  选择一个服务进行连接 发送请求（接口名，参数列表）
 
         GreetingsService greetingsService = referenceConfig.get();
 
-        while (true){
-            for (int i = 0; i < 10; i++) {
-                String res = greetingsService.add(256,256);
-                System.out.println(res);
+        new Thread(()->{
+            while (true){
+                long s = System.currentTimeMillis();
+                for (int i = 0; i < 10; i++) {
+                    System.out.println("------------begin-------------------------------------------------");
+                    String res = greetingsService.add(798,256);
+                    System.out.println("res = " + res);
+                    System.out.println("------------end------------------------------------------------");
+                }
+                System.out.println("System.currentTimeMillis() -s = " + (System.currentTimeMillis() - s));
             }
-            try {
-                Thread.sleep(20000);
-                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
+        }).start();
 
 
     }

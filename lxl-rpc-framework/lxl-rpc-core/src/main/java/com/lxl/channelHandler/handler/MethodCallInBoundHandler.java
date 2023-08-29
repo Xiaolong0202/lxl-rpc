@@ -27,12 +27,12 @@ public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpc
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, LxlRpcRequest msg) throws Exception {
 
-        //首先进行限流操作
+        //先试用限流器进行限流
         SocketAddress socketAddress = ctx.channel().remoteAddress();
         RateLimiter rateLimiter =
                 LxlRpcBootStrap.IP_RATE_LIMITER.get(socketAddress);
         if (rateLimiter == null) {
-            rateLimiter = new TokenBuketRateLimiter(300, 600);
+            rateLimiter = new TokenBuketRateLimiter(1, 1);
             LxlRpcBootStrap.IP_RATE_LIMITER.put(socketAddress, rateLimiter);
         }
 

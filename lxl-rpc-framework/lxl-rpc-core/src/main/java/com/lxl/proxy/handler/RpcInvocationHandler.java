@@ -109,13 +109,13 @@ public class RpcInvocationHandler implements InvocationHandler {
 
                 //---------获取断路器
                 SocketAddress socketAddress = channel.remoteAddress();
-               circuitBreaker  = LxlRpcBootStrap.SERVICE_CIRCUIT_BREAKER.get(socketAddress);
-                if (circuitBreaker == null){
-                    circuitBreaker = new CircuitBreaker(0.4, 10);
+                circuitBreaker = LxlRpcBootStrap.SERVICE_CIRCUIT_BREAKER.get(socketAddress);
+                if (circuitBreaker == null) {
+                    circuitBreaker = new CircuitBreaker(0.01, 1);//为了演示极端情况将熔断的触发值设置的很低
                     LxlRpcBootStrap.SERVICE_CIRCUIT_BREAKER.put(socketAddress, circuitBreaker);
                 }
 
-                if (circuitBreaker.isBreak()){
+                if (rpcRequest.getRequestType() != RequestType.HEART_BEAT.ID && circuitBreaker.isBreak()) {
                     //如果是断路状态,则休眠一段时间再解除熔断状态
                     CircuitBreaker finalCircuitBreaker = circuitBreaker;
                     new Timer().schedule(new TimerTask() {
@@ -123,8 +123,8 @@ public class RpcInvocationHandler implements InvocationHandler {
                         public void run() {
                             finalCircuitBreaker.reset();
                         }
-                    },5000);
-                    throw new CircuitBreakerException("服务 "+interfaceRef.getName()+'.'+method.getName()+":"+socketAddress.toString()+" 熔断需要稍后再试");
+                    }, 5000);
+                    throw new CircuitBreakerException("服务 " + interfaceRef.getName() + '.' + method.getName() + ":" + socketAddress.toString() + " 熔断需要稍后再试");
                 }
 
 
@@ -134,6 +134,7 @@ public class RpcInvocationHandler implements InvocationHandler {
                 ChannelFuture channelFuture = channel.writeAndFlush(rpcRequest);
                 //熔断器记录请求
                 circuitBreaker.countRequest();
+                long begin = System.currentTimeMillis();
                 //添加监听器
                 channelFuture.addListener((ChannelFutureListener) future -> {
                     if (!future.isSuccess()) {
@@ -145,14 +146,17 @@ public class RpcInvocationHandler implements InvocationHandler {
                 //清理ThreadLocal
                 LxlRpcBootStrap.REQUEST_THREAD_LOCAL.remove();
                 //返回结果
-                return objectCompletableFuture.get(3, TimeUnit.SECONDS);//如果返回时间超过三秒则视为相应失败
+                Object res = objectCompletableFuture.get(3, TimeUnit.SECONDS);
+                long interval = System.currentTimeMillis() - begin;
+                log.info("interval = {}", interval);
+                return res;//如果返回时间超过三秒则视为相应失败
 
             } catch (Exception exception) {
                 //熔断器记录失败的请求
                 circuitBreaker.countErrorRequest();
-                if ( exception instanceof CircuitBreakerException){
+                if (exception instanceof CircuitBreakerException) {
                     //如果是熔断异常则直接抛出
-                    break;
+                    throw exception;
                 }
                 tryTimes--;
                 if (tryTimes < 0) {
@@ -164,7 +168,7 @@ public class RpcInvocationHandler implements InvocationHandler {
             }
 
         }
-        throw new RuntimeException("执行远程调用方法 "+method.getName()+" 失败");
+        throw new RuntimeException("执行远程调用方法 " + method.getName() + " 失败");
     }
 
     /**
