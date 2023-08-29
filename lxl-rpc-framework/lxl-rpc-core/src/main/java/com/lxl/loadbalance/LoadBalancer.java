@@ -14,7 +14,7 @@ public interface LoadBalancer {
      * 根据服务名
      * @return
      */
-    InetSocketAddress selectServiceAddr(String ServiceName, String group);
+    InetSocketAddress selectServiceAddr(String ServiceName);
 
     /**
      * 当感知节点发生了动态上下线的时候，我们需要重新进行负载均衡
@@ -22,5 +22,5 @@ public interface LoadBalancer {
      * @param serviceName
      * @param inetSocketAddressList
      */
-    void reLoadBalance(String serviceName, List<InetSocketAddress> inetSocketAddressList);
+    void reLoadBalance(String serviceName,List<InetSocketAddress> inetSocketAddressList);
 }

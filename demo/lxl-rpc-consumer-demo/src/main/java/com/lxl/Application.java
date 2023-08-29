@@ -5,10 +5,14 @@ import com.lxl.discovery.RegistryConfig;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.SerializeType;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 public class Application {
     public static void main(String[] args) {
         //想尽一切办法获取代理对象,使用对象对其进行封装
-        ReferenceConfig<GreetingsService> referenceConfig = new ReferenceConfig<>(GreetingsService.class,"primary");
+        ReferenceConfig<GreetingsService> referenceConfig = new ReferenceConfig<>(GreetingsService.class);
 
         LxlRpcBootStrap.getInstance()
 //                .application("first-rpc-consumer")
@@ -21,19 +25,19 @@ public class Application {
 
         GreetingsService greetingsService = referenceConfig.get();
 
-        new Thread(()->{
-            while (true){
-                long s = System.currentTimeMillis();
-                for (int i = 0; i < 10; i++) {
-                    System.out.println("------------begin-------------------------------------------------");
-                    String res = greetingsService.add(798,256);
-                    System.out.println("res = " + res);
-                    System.out.println("------------end------------------------------------------------");
-                }
-                System.out.println("System.currentTimeMillis() -s = " + (System.currentTimeMillis() - s));
+        ExecutorService newFixedThreadPool = Executors.newFixedThreadPool(10);
+        while (true){
+//                newFixedThreadPool.submit(()->{
+                    long s = System.currentTimeMillis();
+                    for (int i = 0; i < 10; i++) {
+                        System.out.println("------------begin-------------------------------------------------");
+                        String res = greetingsService.add(798,256);
+                        System.out.println("res = " + res);
+                        System.out.println("------------end------------------------------------------------");
+                    }
+                    System.out.println("System.currentTimeMillis() -s = " + (System.currentTimeMillis() - s));
+//                });
             }
-        }).start();
-
 
     }
 }

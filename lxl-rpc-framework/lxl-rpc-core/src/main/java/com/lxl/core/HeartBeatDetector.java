@@ -32,9 +32,9 @@ public class HeartBeatDetector {
     /**
      * 拉取服务列表并进行连接
      */
-    public static void detectorHeartBeat(String serviceName, String group) {
+    public static void detectorHeartBeat(String serviceName) {
 
-        List<InetSocketAddress> inetSocketAddressList = LxlRpcBootStrap.getInstance().getConfiguration().getRegistryConfig().getRegistry().lookup(serviceName, group);
+        List<InetSocketAddress> inetSocketAddressList = LxlRpcBootStrap.getInstance().getConfiguration().getRegistryConfig().getRegistry().lookup(serviceName);
         inetSocketAddressList.forEach(inetSocketAddress -> {
             if (!LxlRpcBootStrap.CHANNEL_CACHE.containsKey(inetSocketAddress)) {
                 try {

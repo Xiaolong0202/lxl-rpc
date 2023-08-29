@@ -1,6 +1,7 @@
 package com.lxl.channelHandler.handler;
 
 import com.lxl.compress.Compressor;
+import com.lxl.core.ShutDownHolder;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.SerializeType;
 import com.lxl.factory.CompressFactory;
@@ -53,7 +54,8 @@ public class RpcResponseToByteEncoder extends MessageToByteEncoder<LxlRpcRespons
         out.writeByte(msg.getCode());
         out.writeLong(msg.getRequestId());
         out.writeBytes(responseBody);
-
+        //写出响应后应当在计数器减一
+        ShutDownHolder.requestCount.decrementAndGet();
         if (log.isDebugEnabled()){
             log.debug("响应【{}】在服务端，已经完成编码",msg.getRequestId());
         }

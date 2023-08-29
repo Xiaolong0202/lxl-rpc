@@ -6,6 +6,7 @@ import com.lxl.channelHandler.handler.RpcRequestDecoder;
 import com.lxl.channelHandler.handler.RpcResponseToByteEncoder;
 import com.lxl.config.Configuration;
 import com.lxl.core.HeartBeatDetector;
+import com.lxl.core.ShutDownHolder;
 import com.lxl.discovery.RegistryConfig;
 import com.lxl.loadbalance.LoadBalancer;
 import com.lxl.protection.circuit.CircuitBreaker;
@@ -28,13 +29,15 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 /**
  * 启动引导
  */
 @Slf4j
-public class  LxlRpcBootStrap {
+public class LxlRpcBootStrap {
     //维护一个全局的配置中心
     private Configuration configuration;
 
@@ -48,7 +51,7 @@ public class  LxlRpcBootStrap {
     //用于存放方法调用时候的请求
     public static final ThreadLocal<LxlRpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
 
-    public static final Map<SocketAddress, RateLimiter> IP_RATE_LIMITER= new ConcurrentHashMap<>(16);
+    public static final Map<SocketAddress, RateLimiter> IP_RATE_LIMITER = new ConcurrentHashMap<>(16);
 
     public static final Map<SocketAddress, CircuitBreaker> SERVICE_CIRCUIT_BREAKER = new ConcurrentHashMap<>(16);
 
@@ -89,10 +92,11 @@ public class  LxlRpcBootStrap {
 
     /**
      * 配置负载均衡策略
+     *
      * @param loadBalancer
      * @return
      */
-    public LxlRpcBootStrap loadBalancer(LoadBalancer loadBalancer){
+    public LxlRpcBootStrap loadBalancer(LoadBalancer loadBalancer) {
         this.configuration.setLoadBalancer(loadBalancer);
         return this;
     }
@@ -152,6 +156,10 @@ public class  LxlRpcBootStrap {
      * 启动Netty服务
      */
     public void start() {
+        //注册一个关闭应用程序的钩子
+        Runtime.getRuntime().addShutdownHook(new LxlRpcShutDownThread());
+
+
         EventLoopGroup boss = new NioEventLoopGroup();
         EventLoopGroup worker = new NioEventLoopGroup();
 
@@ -190,7 +198,7 @@ public class  LxlRpcBootStrap {
     public LxlRpcBootStrap reference(ReferenceConfig<?> referenceConfig) {
         //在这个方法当中获取对应的配置项，用来配置reference,将来使用get方法的时候就可以获取代理对象
         referenceConfig.setRegistry(this.configuration.getRegistryConfig().getRegistry());
-        HeartBeatDetector.detectorHeartBeat(referenceConfig.getInterface().getName(),referenceConfig.getGroup());
+        HeartBeatDetector.detectorHeartBeat(referenceConfig.getInterface().getName());
         return this;
     }
 
@@ -198,7 +206,6 @@ public class  LxlRpcBootStrap {
         this.configuration.setCompressType(compressType);
         return this;
     }
-
 
 
     public LxlRpcBootStrap port(int port) {
@@ -226,23 +233,19 @@ public class  LxlRpcBootStrap {
             Object clazzInstance;
             //首先通过反射获取实例对象
             try {
-               clazzInstance = clazz.getConstructor().newInstance();//使用空参的方法进行构造一个实例
+                clazzInstance = clazz.getConstructor().newInstance();//使用空参的方法进行构造一个实例
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
-            //再通过反射获取实例对象的分组信息
-            LxlRpcApi lxlRpcApi = clazz.getAnnotation(LxlRpcApi.class);
-            String group = lxlRpcApi.group();
 
             for (Class<?> clazzInterface : clazzInterfaces) {
                 ServiceConfig<Object> serviceConfig = new ServiceConfig<>();
                 serviceConfig.setRef(clazzInstance);
                 serviceConfig.setInterface(clazzInterface);
-                serviceConfig.setGroup(group);
                 this.publish(serviceConfig);
-                if (log.isDebugEnabled()){
-                    log.debug("---->已经通过包扫描，将服务【{}】发布",serviceConfig.getInterface().getName());
+                if (log.isDebugEnabled()) {
+                    log.debug("---->已经通过包扫描，将服务【{}】发布", serviceConfig.getInterface().getName());
                 }
             }
 
@@ -261,30 +264,30 @@ public class  LxlRpcBootStrap {
         }
         String absolutePath = url.getPath();
         List<String> classesNames = new ArrayList<>();
-        recursionFile(absolutePath, classesNames,basePath);
+        recursionFile(absolutePath, classesNames, basePath);
         System.out.println("classesNames.toString() = " + classesNames.toString());
         return classesNames;
     }
 
-    private void recursionFile(String absolutePath, List<String> classesNames,String basePath) {
+    private void recursionFile(String absolutePath, List<String> classesNames, String basePath) {
         File file = new File(absolutePath);
         if (file.isDirectory()) {
             //如果是目录
             File[] files = file.listFiles(pathname -> pathname.isDirectory() || pathname.getPath().contains(".class"));
             if (files == null || files.length <= 0) return;
             for (File child : files) {
-                recursionFile(child.getAbsolutePath(), classesNames,basePath);
+                recursionFile(child.getAbsolutePath(), classesNames, basePath);
             }
         } else if (file.isFile()) {
             //如果是文件
-            classesNames.add(getClassNameByAbsolutePath(absolutePath,basePath));
+            classesNames.add(getClassNameByAbsolutePath(absolutePath, basePath));
         }
     }
 
     private String getClassNameByAbsolutePath(String absolutePath, String basePath) {
         String fileName = absolutePath.substring(absolutePath.indexOf(basePath.replaceAll("/", Matcher.quoteReplacement("\\"))))
-                .replaceAll("\\\\",".");
-            return fileName.substring(0,fileName.indexOf(".class"));
+                .replaceAll("\\\\", ".");
+        return fileName.substring(0, fileName.indexOf(".class"));
     }
 
     public Configuration getConfiguration() {
@@ -294,5 +297,26 @@ public class  LxlRpcBootStrap {
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
     }
+
+
+    private static class LxlRpcShutDownThread extends Thread {
+        @Override
+        public void run() {
+            //打开挡板
+            ShutDownHolder.baffle.set(true);
+            long start = System.currentTimeMillis();
+            //等待计数器归零,并且最多等十秒
+            while (ShutDownHolder.requestCount.get() > 0) {
+                if (System.currentTimeMillis() - start> 10000)break;
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            //阻塞结束之后放行。可以执行其他操作，如释放内存
+        }
+    }
+
 
 }

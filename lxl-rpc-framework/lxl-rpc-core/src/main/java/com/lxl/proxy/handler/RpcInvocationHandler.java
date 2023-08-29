@@ -39,12 +39,10 @@ public class RpcInvocationHandler implements InvocationHandler {
 
     private Class interfaceRef;
 
-    private String group;
 
-    public RpcInvocationHandler(Registry registry, Class interfaceRef, String group) {
+    public RpcInvocationHandler(Registry registry, Class interfaceRef) {
         this.registry = registry;
         this.interfaceRef = interfaceRef;
-        this.group = group;
     }
 
     /**
@@ -99,7 +97,7 @@ public class RpcInvocationHandler implements InvocationHandler {
                 //从注册中心找一个可用的服务
 
                 //尝试使用负载均衡器来。选取一个可用的结点
-                InetSocketAddress inetSocketAddress = LxlRpcBootStrap.getInstance().getConfiguration().getLoadBalancer().selectServiceAddr(interfaceRef.getName(),group);
+                InetSocketAddress inetSocketAddress = LxlRpcBootStrap.getInstance().getConfiguration().getLoadBalancer().selectServiceAddr(interfaceRef.getName());
                 System.out.println("inetSocketAddress = 选择的结点：：：：：：：：：：：：：：：：：：：：：：：" + inetSocketAddress);
 
                 if (log.isDebugEnabled()) {

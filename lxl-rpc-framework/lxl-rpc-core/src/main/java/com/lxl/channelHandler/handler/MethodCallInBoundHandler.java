@@ -2,6 +2,7 @@ package com.lxl.channelHandler.handler;
 
 import com.lxl.LxlRpcBootStrap;
 import com.lxl.ServiceConfig;
+import com.lxl.core.ShutDownHolder;
 import com.lxl.enumnation.RequestType;
 import com.lxl.enumnation.ResponseType;
 import com.lxl.protection.rateLimite.RateLimiter;
@@ -26,7 +27,23 @@ import java.net.SocketAddress;
 public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpcRequest> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, LxlRpcRequest msg) throws Exception {
-
+        LxlRpcResponse response = null;
+        //请求进来计数器先自增
+        ShutDownHolder.requestCount.incrementAndGet();
+        if (ShutDownHolder.baffle.get()){
+            //如果客户端正在被关闭,直接写回
+            response = LxlRpcResponse.builder()
+                    .compressType(msg.getCompressType())
+                    .serializableType(msg.getSerializableType())
+                    .code(ResponseType.CLOSING.CODE)
+                    .object(null)
+                    .timeStamp(System.currentTimeMillis())
+                    .requestId(msg.getRequestId())
+                    .build();
+            //写出响应
+            ctx.channel().writeAndFlush(response);
+            return;
+        }
         //先试用限流器进行限流
         SocketAddress socketAddress = ctx.channel().remoteAddress();
         RateLimiter rateLimiter =
@@ -37,7 +54,6 @@ public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpc
         }
 
         //具体的调用过程
-        LxlRpcResponse response = null;
         if (!rateLimiter.allowRequest()) {
             //被限流了
             response = LxlRpcResponse.builder()

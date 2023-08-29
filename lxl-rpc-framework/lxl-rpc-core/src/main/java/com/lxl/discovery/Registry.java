@@ -18,8 +18,7 @@ public interface Registry {
      * 从注册中心拉取一个可用的服务的地址
      *
      * @param serviceName
-     * @param group
      * @return
      */
-    List<InetSocketAddress> lookup(String serviceName, String group);
+    List<InetSocketAddress> lookup(String serviceName);
 }

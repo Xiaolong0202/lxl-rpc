@@ -32,9 +32,6 @@ public class ZookeeperRegistry extends AbstractRegistry {
         //服务名称的结点，是一个持久的结点
         String parentNode = Constant.BASE_PROVIDER+'/'+service.getInterface().getName();
         ZookeeperUtil.createZookeeperNode(zooKeeper,new ZookeeperNode(parentNode,null),null, CreateMode.PERSISTENT);
-        //创建分组
-        parentNode += '/'+service.getGroup();
-        ZookeeperUtil.createZookeeperNode(zooKeeper,new ZookeeperNode(parentNode,null),null, CreateMode.PERSISTENT);
         if (log.isDebugEnabled()){
             log.debug("服务{},已经注册",service.getInterface().getName());
         }
@@ -53,15 +50,14 @@ public class ZookeeperRegistry extends AbstractRegistry {
      * 返回所有可用的服务列表
      *
      * @param serviceName
-     * @param group
      * @return
      */
     @Override
-    public List<InetSocketAddress> lookup(String serviceName, String group) {
+    public List<InetSocketAddress> lookup(String serviceName) {
         //找到对应的结点
-        String serviceNode = Constant.BASE_PROVIDER+'/'+serviceName+'/'+group;
+        String serviceNode = Constant.BASE_PROVIDER+'/'+serviceName;
         //从zk中获取它的子节点
-        List<String> children = ZookeeperUtil.getChildren(zooKeeper, serviceNode,new UpAndDownWatcher(group));
+        List<String> children = ZookeeperUtil.getChildren(zooKeeper, serviceNode,new UpAndDownWatcher());
         //将其封装成InetSocketAddress
         List<InetSocketAddress> inetSocketAddressList = children.stream().map(ipAndPort -> {
             String[] split = ipAndPort.split(":");

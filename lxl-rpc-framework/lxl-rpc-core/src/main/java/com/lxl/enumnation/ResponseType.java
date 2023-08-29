@@ -15,7 +15,7 @@ public enum ResponseType {
     METHOD_CALL_SUCCESS((byte) 20,"方法调用成功"),HEART_BEAT_SUCCESS((byte) 21,"心跳成功返回")
     ,FAILED((byte) 50,"服务端出错")
     ,METHOD_NOT_FOUND((byte) 44,"方法不存在")
-    ,RATE_LIMIT((byte) 31,"服务器负载过高,限流");
+    ,RATE_LIMIT((byte) 31,"服务器负载过高,限流"), CLOSING((byte) 51, "服务器正在关闭,无法提供服务");
     public final byte CODE;
     public final String description;
     ResponseType(byte CODE, String description){
