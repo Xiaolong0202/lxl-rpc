@@ -33,13 +33,15 @@ public class ZookeeperUtil {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         ZooKeeper zooKeeper;
         try {
-            zooKeeper  = new ZooKeeper(connectString, timeout, event -> {
+            zooKeeper  = new ZooKeeper(connectString, 100, event -> {
                 if (event.getState() == Watcher.Event.KeeperState.SyncConnected) {
                     log.debug("客户端连接成功");
                     countDownLatch.countDown();
                 }
             });
+            log.debug("开始等待连接");
             countDownLatch.await();
+            log.debug("await finish");
             return zooKeeper;
         } catch (IOException | InterruptedException e) {
             log.error("创建Zookeeper实例的时候发生了异常:",e);

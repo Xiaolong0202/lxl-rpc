@@ -15,10 +15,9 @@ import java.util.concurrent.CountDownLatch;
 public class Application {
     public static void main(String[] args) {
 
-        String connectString = "39.107.52.125:2181";
+        String connectString = "127.0.0.1:2181";
         int timeout = Constant.DEFAULT_ZK_TIME_OUT;
         //创建基本的目录
-
             try (ZooKeeper zooKeeper = ZookeeperUtil.createZookeeper(connectString,timeout)) {
                 //定义节点和数据
                 String basePath = "/lxlRpc-metadata";

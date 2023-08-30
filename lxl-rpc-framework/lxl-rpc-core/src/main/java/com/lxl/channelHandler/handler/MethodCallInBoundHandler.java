@@ -49,7 +49,7 @@ public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpc
         RateLimiter rateLimiter =
                 LxlRpcBootStrap.IP_RATE_LIMITER.get(socketAddress);
         if (rateLimiter == null) {
-            rateLimiter = new TokenBuketRateLimiter(1, 1);
+            rateLimiter = new TokenBuketRateLimiter(10, 10);
             LxlRpcBootStrap.IP_RATE_LIMITER.put(socketAddress, rateLimiter);
         }
 

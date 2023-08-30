@@ -16,7 +16,7 @@ public class Application {
         //发布服务 启动服务
         LxlRpcBootStrap.getInstance()
 //                .application("first-rpc-provider")
-                .registry(new RegistryConfig("zookeeper://39.107.52.125:2181"))
+//                .registry(new RegistryConfig("zookeeper://39.107.52.125:2181"))
 //                .protocol(new ProtocolConfig("jdk"))
 //                .port(3339)
 //                .publish(service);

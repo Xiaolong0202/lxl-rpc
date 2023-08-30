@@ -4,10 +4,9 @@
 <configuration>
     <port>8088</port>
     <appName>lxl-Rpc-demo</appName>
-    <registry url="zookeeper://39.107.52.125:2181"/>
+    <registry url="zookeeper://127.0.0.1:2181"/>
     <!--二选一-->
-    <serializeType type="haisen"/>
-    <serializer class="com.lxl.serialize.impl.HessianSerializerImpl" code="127" name="haisen"/>
+    <serializeType type="JDK"/>
     <!--二选一-->
 <!--    <compressType type="ZIP"/>-->
 <!--    <compressor class="com.lxl.compress.impl.GzipCompressImpl"/>-->

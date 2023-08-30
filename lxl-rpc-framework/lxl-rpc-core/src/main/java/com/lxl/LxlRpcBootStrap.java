@@ -213,6 +213,11 @@ public class LxlRpcBootStrap {
         return this;
     }
 
+    /**
+     * 扫描目标包内的所有被注解@LxlApi标注的类
+     * @param packageName
+     * @return
+     */
     public LxlRpcBootStrap scan(String packageName) {
         //通过包名获取其下的所有类的权限定名
         List<String> classesName = getAllClassesName(packageName);

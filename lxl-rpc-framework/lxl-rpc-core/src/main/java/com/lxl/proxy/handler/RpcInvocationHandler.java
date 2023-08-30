@@ -110,7 +110,7 @@ public class RpcInvocationHandler implements InvocationHandler {
                 SocketAddress socketAddress = channel.remoteAddress();
                 circuitBreaker = LxlRpcBootStrap.SERVICE_CIRCUIT_BREAKER.get(socketAddress);
                 if (circuitBreaker == null) {
-                    circuitBreaker = new CircuitBreaker(0.01, 1);//为了演示极端情况将熔断的触发值设置的很低
+                    circuitBreaker = new CircuitBreaker(0.4, 10);//为了演示极端情况将熔断的触发值设置的很低
                     LxlRpcBootStrap.SERVICE_CIRCUIT_BREAKER.put(socketAddress, circuitBreaker);
                 }
 
