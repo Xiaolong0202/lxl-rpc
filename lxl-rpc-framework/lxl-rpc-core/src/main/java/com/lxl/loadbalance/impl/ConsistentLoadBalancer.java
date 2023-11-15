@@ -15,6 +15,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
+ * 一致性哈希负载均衡器
  * @Author LiuXiaolong
  * @Description lxl-rpc
  * @DateTime 2023/8/19  14:17

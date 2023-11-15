@@ -22,14 +22,14 @@ public class SpiResolver {
         List<ObjectMapper<LoadBalancer>> loadbalancerWrapperList = SpiHandler.getList(LoadBalancer.class);
         List<ObjectMapper<Compressor>> compressorWrapperList = SpiHandler.getList(Compressor.class);
         List<ObjectMapper<Serializer>> serializerWrapperList = SpiHandler.getList(Serializer.class);
-        //todo 将这些实现都put到工厂当中
+        // 将这些实现都put到工厂当中
         //将获取到的实例加载到configuratoin当中
         if (loadbalancerWrapperList != null && loadbalancerWrapperList.size() > 0) {
             configuration.setLoadBalancer(loadbalancerWrapperList.get(0).getImplement());
         }
         if (compressorWrapperList != null && compressorWrapperList.size() > 0) {
-            compressorWrapperList.forEach(CompressFactory::addCompressor);
-            configuration.setCompressType(compressorWrapperList.get(0).getName());
+            compressorWrapperList.forEach(CompressFactory::addCompressor);//将实现类放入工厂当中
+            configuration.setCompressType(compressorWrapperList.get(0).getName());//将列表中的第一个的压缩器放着configuration类当中
         }
         if (serializerWrapperList != null && serializerWrapperList.size() > 0) {
             serializerWrapperList.forEach(SerializerFactory::addSerializer);

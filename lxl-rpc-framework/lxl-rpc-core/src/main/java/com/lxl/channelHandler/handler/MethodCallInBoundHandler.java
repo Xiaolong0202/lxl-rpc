@@ -109,8 +109,8 @@ public class MethodCallInBoundHandler extends SimpleChannelInboundHandler<LxlRpc
         if (payload == null) return new Object();
         try {
             //从缓存当中获取对应的serviceConfig
-            ServiceConfig serviceConfig = LxlRpcBootStrap.SERVICE_CONFIG_CACHE.get(payload.getInterfaceName());
-            Class interfaceClass = serviceConfig.getInterface();
+            ServiceConfig<?> serviceConfig = LxlRpcBootStrap.SERVICE_CONFIG_CACHE.get(payload.getInterfaceName());
+            Class<?> interfaceClass = serviceConfig.getInterface();
             //使用反射直接去调用方法
             Method method = interfaceClass.getDeclaredMethod(payload.getMethodName(), payload.getMethodParametersClass());
             method.setAccessible(true);

@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Slf4j
 public class Configuration {
+    //该类是BootStrap的一个final成员变量，所以会在BootStrap被加载的时候被实例化,所以能够保证SpiResolver、XMLResolver这些读取配置的方法能够在第一时间被执行
     //配置信息-->端口号
     private int PORT = 8080;
 
@@ -33,9 +34,8 @@ public class Configuration {
     //应用程序的名字
     private String appName = "default";
 
-    private ProtocolConfig protocolConfig = new ProtocolConfig("JDK");
     //注册配置
-    private RegistryConfig registryConfig = new RegistryConfig("zookeeper://39.107.52.125:2181");
+    private RegistryConfig registryConfig = new RegistryConfig("zookeeper://127.0.0.1:2181");
 
     //配置信息--ID生成器
     private IdGenerator idGenerator = new IdGenerator(1L, 2L);

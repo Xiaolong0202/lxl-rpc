@@ -2,9 +2,6 @@ package com.lxl;
 
 import com.lxl.annotation.LxlRpcApi;
 import com.lxl.channelHandler.ClientChannelInitializer;
-import com.lxl.channelHandler.handler.MethodCallInBoundHandler;
-import com.lxl.channelHandler.handler.RpcRequestDecoder;
-import com.lxl.channelHandler.handler.RpcResponseToByteEncoder;
 import com.lxl.config.Configuration;
 import com.lxl.core.HeartBeatDetector;
 import com.lxl.core.ShutDownHolder;
@@ -16,10 +13,7 @@ import com.lxl.transport.message.request.LxlRpcRequest;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -37,30 +31,42 @@ import java.util.regex.Matcher;
  */
 @Slf4j
 public class LxlRpcBootStrap {
-    //维护一个全局的配置中心
-    private Configuration configuration;
 
+
+    //维护一个全局的配置
+    private final Configuration configuration = new Configuration();
+
+    //用于存放ip地址与channel之间的映射
     public static final Map<InetSocketAddress, Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(256);
-    public static final Map<String, ServiceConfig> SERVICE_CONFIG_CACHE = new ConcurrentHashMap<>(256);
-    //用于存储completableFutrue,一个completableFutrue就维护这一次远程方法调用的操作
+
+    //用于维护，接口名与方法实现类的映射
+    public static final Map<String, ServiceConfig<?>> SERVICE_CONFIG_CACHE = new ConcurrentHashMap<>(256);
+
+    //用于维护方法调用id与CompletableFuture的映射，我们需要使用CompletableFuture来获取方法调用的结果
     public static final Map<Long, CompletableFuture<Object>> COMPLETABLE_FUTURE_CACHE = new ConcurrentHashMap<>(256);
+
+
     //存储响应时间与ip地址的键值对，并且按照响应时间来排序
     public static final SortedMap<Long, InetSocketAddress> RESPONSE_TIME_CHANNEL_CACHE = Collections.synchronizedSortedMap(new TreeMap<>());
 
-    //用于存放方法调用时候的请求
+
+    //用于存放方法调用时候的请求,一次方法调用的线程对应者一次请求
     public static final ThreadLocal<LxlRpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
+
+    //ip地址也就是远程client端与他限流器映射，一个远程服务方要有一个限流器来进行限流
 
     public static final Map<SocketAddress, RateLimiter> IP_RATE_LIMITER = new ConcurrentHashMap<>(16);
 
+    // ip地址与断路器的映射
     public static final Map<SocketAddress, CircuitBreaker> SERVICE_CIRCUIT_BREAKER = new ConcurrentHashMap<>(16);
+
 
     //是一个单例类
     private LxlRpcBootStrap() {
         //做一些初始化操作
-        this.configuration = new Configuration();
     }
 
-    private static LxlRpcBootStrap instance = new LxlRpcBootStrap();
+    private static final LxlRpcBootStrap instance = new LxlRpcBootStrap();
 
     public static LxlRpcBootStrap getInstance() {
         return instance;
@@ -101,20 +107,6 @@ public class LxlRpcBootStrap {
     }
 
 
-    /**
-     * 配置当前服务序列化的协议
-     *
-     * @param protocalConfig
-     * @return
-     */
-    public LxlRpcBootStrap protocol(ProtocolConfig protocalConfig) {
-        this.configuration.setProtocolConfig(protocalConfig);
-        if (log.isDebugEnabled()) {
-            log.debug("当前工程使用了:{}协议进行序列化", protocalConfig.toString());
-        }
-        return this;
-    }
-
     public LxlRpcBootStrap serialize(String serializeType) {
         this.configuration.setSerializeType(serializeType);
         return this;
@@ -152,9 +144,9 @@ public class LxlRpcBootStrap {
 
 
     /**
-     * 启动Netty服务
+     * 启动服务端的Netty服务,开启对应方法的监听
      */
-    public void start() {
+    public void ServerStart() {
         //注册一个关闭应用程序的钩子
         Runtime.getRuntime().addShutdownHook(new LxlRpcShutDownThread());
 
@@ -181,14 +173,14 @@ public class LxlRpcBootStrap {
 
 
     /**
+     *
      * @param referenceConfig
      * @return
      */
-    public LxlRpcBootStrap reference(ReferenceConfig<?> referenceConfig) {
+    public void reference(ReferenceConfig<?> referenceConfig) {
         //在这个方法当中获取对应的配置项，用来配置reference,将来使用get方法的时候就可以获取代理对象
         referenceConfig.setRegistry(this.configuration.getRegistryConfig().getRegistry());
         HeartBeatDetector.detectorHeartBeat(referenceConfig.getInterface().getName());
-        return this;
     }
 
     public LxlRpcBootStrap compress(String compressType) {
@@ -219,9 +211,7 @@ public class LxlRpcBootStrap {
                     } catch (ClassNotFoundException e) {
                         throw new RuntimeException(e);
                     }
-                }).filter(clazz -> {
-                    return clazz.getAnnotation(LxlRpcApi.class) != null;
-                })
+                }).filter(clazz -> clazz.getAnnotation(LxlRpcApi.class) != null)
                 .toList();
         for (Class<?> clazz : classList) {
             Class<?>[] clazzInterfaces = clazz.getInterfaces();
@@ -249,6 +239,12 @@ public class LxlRpcBootStrap {
         return this;
     }
 
+    /**
+     * 获取子包下面的所有的类名
+     *
+     * @param packageName
+     * @return
+     */
     private List<String> getAllClassesName(String packageName) {
 
         //通过包路径获取绝对路径
@@ -264,6 +260,13 @@ public class LxlRpcBootStrap {
         return classesNames;
     }
 
+    /**
+     * 递归调用获取所有的.class的类名
+     *
+     * @param absolutePath
+     * @param classesNames
+     * @param basePath
+     */
     private void recursionFile(String absolutePath, List<String> classesNames, String basePath) {
         File file = new File(absolutePath);
         if (file.isDirectory()) {
@@ -279,6 +282,13 @@ public class LxlRpcBootStrap {
         }
     }
 
+    /**
+     * 获取类名
+     *
+     * @param absolutePath
+     * @param basePath
+     * @return
+     */
     private String getClassNameByAbsolutePath(String absolutePath, String basePath) {
         String fileName = absolutePath.substring(absolutePath.indexOf(basePath.replaceAll("/", Matcher.quoteReplacement("\\"))))
                 .replaceAll("\\\\", ".");
@@ -288,11 +298,6 @@ public class LxlRpcBootStrap {
     public Configuration getConfiguration() {
         return configuration;
     }
-
-    public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
-    }
-
 
     private static class LxlRpcShutDownThread extends Thread {
         @Override

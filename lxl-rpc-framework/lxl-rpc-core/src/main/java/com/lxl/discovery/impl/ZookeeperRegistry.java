@@ -14,6 +14,7 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 
@@ -43,7 +44,9 @@ public class ZookeeperRegistry extends AbstractRegistry {
         String ipAddr =  NetUtil.getLocalHostExactAddress();
         if (log.isDebugEnabled())log.debug("局域网ip地址:"+ipAddr);
         String node = parentNode+'/'+ipAddr+':'+ LxlRpcBootStrap.getInstance().getConfiguration().getPORT();
-        ZookeeperUtil.createZookeeperNode(zooKeeper,new ZookeeperNode(node,null),null,CreateMode.EPHEMERAL);//创建一个临时的结点
+        ZookeeperUtil.createZookeeperNode(zooKeeper
+                //将局域网ip作为名字，applicationName作为data放入
+                ,new ZookeeperNode(node,LxlRpcBootStrap.getInstance().getConfiguration().getAppName().getBytes(StandardCharsets.UTF_8)),null,CreateMode.EPHEMERAL);//创建一个临时的结点
     }
 
     /**

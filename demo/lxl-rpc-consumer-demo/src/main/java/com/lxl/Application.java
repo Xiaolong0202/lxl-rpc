@@ -19,7 +19,7 @@ public class Application {
 //                .registry(new RegistryConfig("zookeeper://39.107.52.125:2181"))
 //                .serialize(SerializeType.HESSIAN)
 //                .compress(CompressType.GZIP)
-                .reference(referenceConfig);
+                .reference(referenceConfig);//使用reference方法对给对象进行处理，获取其代理对象
 
         //代理都  连接注册中心  获取服务列表  选择一个服务进行连接 发送请求（接口名，参数列表）
 

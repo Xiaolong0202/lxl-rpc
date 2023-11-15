@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
@@ -31,16 +32,17 @@ import java.util.concurrent.TimeUnit;
 /**
  * 该类封装了客户端通信的基础
  * 1.发现服务 2.建立连接 3.发送请求 4.获取服务调用的结果
+ * @author 13430
  */
 @Slf4j
 public class RpcInvocationHandler implements InvocationHandler {
 
     private Registry registry;
 
-    private Class interfaceRef;
+    private Class<?> interfaceRef;
 
 
-    public RpcInvocationHandler(Registry registry, Class interfaceRef) {
+    public RpcInvocationHandler(Registry registry, Class<?> interfaceRef) {
         this.registry = registry;
         this.interfaceRef = interfaceRef;
     }
@@ -152,7 +154,7 @@ public class RpcInvocationHandler implements InvocationHandler {
 
             } catch (Exception exception) {
                 //熔断器记录失败的请求
-                circuitBreaker.countErrorRequest();
+                Objects.requireNonNull(circuitBreaker).countErrorRequest();
                 if (exception instanceof CircuitBreakerException) {
                     //如果是熔断异常则直接抛出
                     throw exception;

@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public abstract class AbstractLoadBalancer implements LoadBalancer{
 
-    //服务与选择器的映射，因为一个选择器就维护了一个服务列表
+    //服务名与选择器的映射，因为一个选择器就维护了一个服务列表
     private final Map<String,Selector> SELECTOR_CACHE = new ConcurrentHashMap<>(8);
 
 
@@ -33,6 +33,7 @@ public abstract class AbstractLoadBalancer implements LoadBalancer{
 
     @Override
     public void reLoadBalance(String serviceName, List<InetSocketAddress> inetSocketAddressList) {
+        //更新该服务的服务列表以重新负载均衡
         SELECTOR_CACHE.put(serviceName,getSelector(inetSocketAddressList));
     }
 

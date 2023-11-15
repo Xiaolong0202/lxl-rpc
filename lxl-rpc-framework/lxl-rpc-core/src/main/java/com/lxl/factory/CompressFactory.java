@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 @Slf4j
 public class CompressFactory {
-    //序列化器的缓存
+    //序列化器的缓存,名字、编码与ObjectMapper的映射
     private static final Map<String, ObjectMapper<Compressor>> COMPRESS_NAME_CACHE = new ConcurrentHashMap<>(8);
     private static final Map<Byte, ObjectMapper<Compressor>> COMPRESS_CODE_CACHE = new ConcurrentHashMap<>(8);
 

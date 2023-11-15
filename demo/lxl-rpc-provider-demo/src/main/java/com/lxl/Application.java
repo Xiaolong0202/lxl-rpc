@@ -1,6 +1,5 @@
 package com.lxl;
 
-import com.lxl.discovery.RegistryConfig;
 import com.lxl.impl.GreetingsServiceImpl;
 
 public class Application {
@@ -20,7 +19,7 @@ public class Application {
 //                .protocol(new ProtocolConfig("jdk"))
 //                .port(3339)
 //                .publish(service);
-                .scan("com.lxl.impl")
-                .start();
+                .scan("com.lxl.impl")//扫描某个包并进行发布
+                .ServerStart();
     }
 }

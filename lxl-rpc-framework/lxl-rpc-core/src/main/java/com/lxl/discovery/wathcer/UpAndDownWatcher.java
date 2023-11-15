@@ -16,10 +16,12 @@ import java.util.List;
  * @Description lxl-rpc
  * @DateTime 2023/8/22  20:13
  **/
+
+/**
+ * 使用zookeeper的监听器机制来监听服务的上线与下线，并更新channel缓存列表
+ */
 @Slf4j
 public class UpAndDownWatcher implements Watcher {
-
-
 
 
     @Override

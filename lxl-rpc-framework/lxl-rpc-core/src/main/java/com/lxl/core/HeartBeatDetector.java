@@ -30,7 +30,7 @@ import java.util.concurrent.TimeoutException;
 public class HeartBeatDetector {
 
     /**
-     * 拉取服务列表并进行连接
+     * 拉取服务列表并进行连接,对没有连接的服务使用Netty创建连接
      */
     public static void detectorHeartBeat(String serviceName) {
 
