@@ -25,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
  * requestType 1
  * requestId 8
  *
+ * 客户端的响应编码器
+ *
  * 请求体:未知长度
  * 出栈时候第一个处理器，先进行编码
  */

@@ -104,7 +104,7 @@ public class SpiHandler {
                 instanceList.add(new ObjectMapper<>(code, name, instance));
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException |
                      InvocationTargetException e) {
-                log.error("实例化【】的时候出现了异常", implementName, e);
+                log.error("实例化【{}】的时候出现了异常", implementName, e);
             }
             SPI_IMPLEMENT.put(clazz, instanceList);
         }

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -23,13 +24,13 @@ public class Application {
                 String basePath = "/lxlRpc-metadata";
                 String providerPath = basePath + "/provider";
                 String  consumerPath = basePath + "/consumer";
-                ZookeeperNode baseNode = new ZookeeperNode(basePath,"basePath".getBytes("UTF-8"));
-                ZookeeperNode providerNode = new ZookeeperNode(providerPath, "provider".getBytes("UTF-8"));
-                ZookeeperNode consumerNode= new ZookeeperNode(consumerPath,"consumerPath".getBytes("UTF-8"));
+                ZookeeperNode baseNode = new ZookeeperNode(basePath,"basePath".getBytes(StandardCharsets.UTF_8));
+                ZookeeperNode providerNode = new ZookeeperNode(providerPath, "provider".getBytes(StandardCharsets.UTF_8));
+                ZookeeperNode consumerNode= new ZookeeperNode(consumerPath,"consumerPath".getBytes(StandardCharsets.UTF_8));
                 List.of(baseNode,providerNode,consumerNode).forEach(node->{
                     ZookeeperUtil.createZookeeperNode(zooKeeper,node,null,CreateMode.PERSISTENT);
                    });
-            } catch (IOException | InterruptedException  e) {
+            } catch (InterruptedException e) {
                 log.error("创建结点的时候产生了异常如下:",e);
             throw new RuntimeException(e);
         }

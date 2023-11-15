@@ -26,6 +26,8 @@ import lombok.extern.slf4j.Slf4j;
  * 请求的id 8
  * 请求体 未知
  *
+ * 服务端的响应编码器
+ *
  * @Author LiuXiaolong
  * @Description lxl-rpc
  * @DateTime 2023/8/17  14:02

@@ -48,11 +48,9 @@ public class Configuration {
     //负载均衡策略
     private LoadBalancer loadBalancer = new RoundLoadBalancer();
 
-    //读取xml
 
 
     //进行配置
-
     public Configuration() {
         //成员变量默认配置项
 
@@ -60,7 +58,6 @@ public class Configuration {
         //spi发现配置
         SpiResolver sprResolver = new SpiResolver();
         sprResolver.loadFromSpi(this);
-
 
         //读取xml配置信息
         XMLResolver xmlResolver = new XMLResolver();
@@ -72,8 +69,6 @@ public class Configuration {
     public static void main(String[] args) {
         new Configuration();
     }
-
-
 
 
 }

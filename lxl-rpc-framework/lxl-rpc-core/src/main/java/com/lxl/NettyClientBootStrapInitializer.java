@@ -6,6 +6,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
+/**
+ * @author 13430
+ */
 public class NettyClientBootStrapInitializer {
 
     private static Bootstrap bootstrap = new Bootstrap();

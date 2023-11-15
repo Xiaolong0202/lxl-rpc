@@ -1,6 +1,7 @@
 package com.lxl;
 
 import com.lxl.annotation.LxlRpcApi;
+import com.lxl.channelHandler.ClientChannelInitializer;
 import com.lxl.channelHandler.handler.MethodCallInBoundHandler;
 import com.lxl.channelHandler.handler.RpcRequestDecoder;
 import com.lxl.channelHandler.handler.RpcResponseToByteEncoder;
@@ -29,8 +30,6 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 /**
@@ -166,17 +165,7 @@ public class LxlRpcBootStrap {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(boss, worker)
                 .channel(NioServerSocketChannel.class)
-                .childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    protected void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline()
-                                .addLast(new LoggingHandler(LogLevel.DEBUG))
-                                .addLast(new RpcRequestDecoder())//解码器
-                                .addLast(new MethodCallInBoundHandler())//根据请求进行方法调用
-                                .addLast(new RpcResponseToByteEncoder());//解析返回的相应
-                    }
-                });
-
+                .childHandler(new ClientChannelInitializer());
         try {
             serverBootstrap.bind(this.configuration.getPORT()).sync();
         } catch (InterruptedException e) {
@@ -215,6 +204,7 @@ public class LxlRpcBootStrap {
 
     /**
      * 扫描目标包内的所有被注解@LxlApi标注的类
+     *
      * @param packageName
      * @return
      */
@@ -312,7 +302,7 @@ public class LxlRpcBootStrap {
             long start = System.currentTimeMillis();
             //等待计数器归零,并且最多等十秒
             while (ShutDownHolder.requestCount.get() > 0) {
-                if (System.currentTimeMillis() - start> 10000)break;
+                if (System.currentTimeMillis() - start > 10000) break;
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {

@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Date;
 
 /**
+ * lxl-rpc,服务端的解析报文的解码器
  * @Author LiuXiaolong
  * @Description lxl-rpc,服务端的解析报文的解码器
  * @DateTime 2023/8/16  19:51
