@@ -10,6 +10,8 @@ import com.lxl.discovery.RegistryConfig;
 import com.lxl.enumnation.CompressType;
 import com.lxl.enumnation.SerializeType;
 import com.lxl.loadbalance.LoadBalancer;
+import com.lxl.loadbalance.impl.ConsistentLoadBalancer;
+import com.lxl.loadbalance.impl.MinimumResponseTimeBalancer;
 import com.lxl.loadbalance.impl.RoundLoadBalancer;
 import com.lxl.serialize.Serializer;
 import com.lxl.serialize.impl.HessianSerializerImpl;
@@ -45,9 +47,10 @@ public class Configuration {
     //压缩的类型
     private String compressType = "GZIP";
 
-    //负载均衡策略
-    private LoadBalancer loadBalancer = new RoundLoadBalancer();
-
+    //负载均衡策略,
+//    private LoadBalancer loadBalancer = new RoundLoadBalancer();
+//    private LoadBalancer loadBalancer = new ConsistentLoadBalancer();
+    private LoadBalancer loadBalancer = new MinimumResponseTimeBalancer();
 
 
     //进行配置

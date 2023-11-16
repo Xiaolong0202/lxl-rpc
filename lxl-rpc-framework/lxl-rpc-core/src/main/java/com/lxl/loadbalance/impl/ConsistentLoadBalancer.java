@@ -31,6 +31,7 @@ public class ConsistentLoadBalancer extends AbstractLoadBalancer {
 
     private static class ConsistentSelector implements Selector {
 
+        //设置虚拟哈希结点的个数
         private int virtualNodeNum;
 
         private SortedMap<Integer, InetSocketAddress> hashRing;

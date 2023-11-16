@@ -1,6 +1,6 @@
 package com.lxl.channelHandler;
 
-import com.lxl.channelHandler.handler.MySimpleChannelInboundHandler;
+import com.lxl.channelHandler.handler.MethodResultInBoundHandler;
 import com.lxl.channelHandler.handler.RpcRequestToByteEncoder;
 import com.lxl.channelHandler.handler.RpcResponseDecoder;
 import io.netty.channel.ChannelInitializer;
@@ -19,6 +19,6 @@ public class ConsumerChannelInitializer extends ChannelInitializer<SocketChannel
                 .addLast(new LoggingHandler(LogLevel.DEBUG))//日志
                 .addLast(new RpcRequestToByteEncoder())//发送请求的时候的编码器
                 .addLast(new RpcResponseDecoder())//接受响应的解码器
-                .addLast(new MySimpleChannelInboundHandler());
+                .addLast(new MethodResultInBoundHandler());
     }
 }

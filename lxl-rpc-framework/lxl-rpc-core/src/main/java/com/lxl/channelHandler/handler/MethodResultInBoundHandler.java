@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 
 
 @Slf4j
-public class MySimpleChannelInboundHandler extends SimpleChannelInboundHandler<LxlRpcResponse>  {
+public class MethodResultInBoundHandler extends SimpleChannelInboundHandler<LxlRpcResponse>  {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, LxlRpcResponse msg) throws Exception {
 
