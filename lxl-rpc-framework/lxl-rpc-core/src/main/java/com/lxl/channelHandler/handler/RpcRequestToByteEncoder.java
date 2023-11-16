@@ -15,18 +15,20 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * 报文格式：
- * 魔术值:lxlRpc  6个字节  魔数
- * version版本  1
- * head length 首部的长度 2
- * full length 报文得到总长度 8
- * serialize  1
- * compress 1
- * requestType 1
- * requestId 8
- *
+ * 报文的格式
+ * 魔数 6
+ * 版本 1
+ * 首部长度 2
+ * 报文总长度 8
+ * 序列化类型 1
+ * 压缩类型 1
+ * 请求类型 1
+ * 请求id 8
+ * 时间戳 8
+ * 请求体
+ * <p>
  * 客户端的响应编码器
- *
+ * <p>
  * 请求体:未知长度
  * 出栈时候第一个处理器，先进行编码
  */
@@ -36,7 +38,7 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
     @Override
     protected void encode(ChannelHandlerContext ctx, LxlRpcRequest msg, ByteBuf out) throws Exception {
         byte[] payLoadBytes = new byte[0];
-        if (msg.getRequestPayload() != null){
+        if (msg.getRequestPayload() != null) {
             //获取序列化器
             Serializer serializer = SerializerFactory.getSerializerByCode(msg.getSerializableType()).getImplement();
             //序列化
@@ -57,12 +59,13 @@ public class RpcRequestToByteEncoder extends MessageToByteEncoder<LxlRpcRequest>
         out.writeByte(msg.getRequestType());
         out.writeLong(msg.getRequestId());
         out.writeLong(msg.getTimeStamp());
-        if (msg.getRequestType() == RequestType.HEART_BEAT.ID)return;//如果是心跳请求，则可以直接返回，因为没有请求体
+        if (msg.getRequestType() == RequestType.HEART_BEAT.ID) return;//如果是心跳请求，则可以直接返回，因为没有请求体
         //请求体
         out.writeBytes(payLoadBytes);
-        if (log.isDebugEnabled()){
-            log.debug("请求【{}】在客户端，已经完成编码",msg.getRequestId());
+        if (log.isDebugEnabled()) {
+            log.debug("请求【{}】在客户端，已经完成编码", msg.getRequestId());
         }
+
     }
 
 }

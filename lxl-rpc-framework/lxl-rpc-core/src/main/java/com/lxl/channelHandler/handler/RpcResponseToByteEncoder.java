@@ -16,15 +16,15 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 报文格式
  *
- * 魔术值 6
- * 版本号 1
- * 头部长度 2
- * 总长度 8
+ * 魔数 6
+ * 版本 1
+ * 首部长度 2
+ * 报文总长度 8
  * 序列化类型 1
- * 压缩方式 1
- * 响应码  1
- * 请求的id 8
- * 请求体 未知
+ * 压缩类型 1
+ * 响应码 1
+ * 请求id 8
+ * 时间戳 8
  *
  * 服务端的响应编码器
  *
@@ -61,6 +61,7 @@ public class RpcResponseToByteEncoder extends MessageToByteEncoder<LxlRpcRespons
         if (log.isDebugEnabled()){
             log.debug("响应【{}】在服务端，已经完成编码",msg.getRequestId());
         }
+
     }
 
 
