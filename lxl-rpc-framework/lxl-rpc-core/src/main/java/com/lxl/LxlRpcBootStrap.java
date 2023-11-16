@@ -1,7 +1,7 @@
 package com.lxl;
 
 import com.lxl.annotation.LxlRpcApi;
-import com.lxl.channelHandler.ClientChannelInitializer;
+import com.lxl.channelHandler.ServerChannelInitializer;
 import com.lxl.config.Configuration;
 import com.lxl.core.HeartBeatDetector;
 import com.lxl.core.ShutDownHolder;
@@ -157,7 +157,7 @@ public class LxlRpcBootStrap {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(boss, worker)
                 .channel(NioServerSocketChannel.class)
-                .childHandler(new ClientChannelInitializer());
+                .childHandler(new ServerChannelInitializer());
         try {
             serverBootstrap.bind(this.configuration.getPORT()).sync();
         } catch (InterruptedException e) {

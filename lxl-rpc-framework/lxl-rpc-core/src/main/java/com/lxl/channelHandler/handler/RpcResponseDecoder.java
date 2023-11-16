@@ -70,7 +70,7 @@ public class RpcResponseDecoder extends ByteToMessageDecoder {
         //请求体
         byte[] objectBytes = new byte[(int) (fullLen - headLen)];
         in.readBytes(objectBytes);
-        System.out.println("objectBytes.length = " + objectBytes.length);
+        log.debug("获取的响应当中ByteBuf的长度为【{}】,通过解析报文得出的fullLength为【{}】",in.capacity(),fullLen);
         Object bodyObject = null;
         if (objectBytes.length > 0) {
             //获取压缩器

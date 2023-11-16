@@ -71,6 +71,7 @@ public class RpcRequestDecoder extends ByteToMessageDecoder {
         long timeStamp = byteBuf.readLong();
 
         log.debug("接受到请求，请求类型为【{}】",requestType);
+        log.debug("获取的请求当中ByteBuf的长度为【{}】,通过解析报文得出的fullLength为【{}】",byteBuf.capacity(),fullLen);
 
         ///将请求体反序列化  心跳请求没有请求体
         RequestPayload requestPayload = null;
