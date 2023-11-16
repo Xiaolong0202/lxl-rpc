@@ -173,7 +173,7 @@ public class LxlRpcBootStrap {
 
 
     /**
-     *
+     * 为refernceConfig设置Registry,
      * @param referenceConfig
      * @return
      */

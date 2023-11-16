@@ -29,8 +29,11 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 public class HeartBeatDetector {
 
+    private static Thread heartDetectorThread;
+
     /**
-     * 拉取服务列表并进行连接,对没有连接的服务使用Netty创建连接
+     * 拉取服务列表并进行连接,对没有连接的服务使用Netty创建连接,
+     * 如果没有开启心跳检测的话则开始心跳检测
      */
     public static void detectorHeartBeat(String serviceName) {
 
@@ -45,10 +48,11 @@ public class HeartBeatDetector {
                 }
             }
         });
-
-        Thread thread = new Thread(() -> new Timer().schedule(new HeartBeatTask(), 0, 5000), "lxl-rpc-HeartBeatDetector-Thread");
-        thread.setDaemon(true);//设置为守护线程
-        thread.start();
+        if (heartDetectorThread == null) {
+            heartDetectorThread = new Thread(() -> new Timer().schedule(new HeartBeatTask(), 0, 5000), "lxl-rpc-HeartBeatDetector-Thread");
+            heartDetectorThread.setDaemon(true);//设置为守护线程
+            heartDetectorThread.start();
+        }
     }
 
     private static class HeartBeatTask extends TimerTask {
