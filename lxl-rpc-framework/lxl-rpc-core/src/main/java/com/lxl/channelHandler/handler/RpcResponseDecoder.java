@@ -10,8 +10,11 @@ import com.lxl.serialize.Serializer;
 import com.lxl.transport.message.response.LxlRpcResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 /**
  * 魔术值 6
@@ -23,20 +26,22 @@ import lombok.extern.slf4j.Slf4j;
  * 响应码  1
  * 请求的id 8
  * 请求体 未知
- *
+ * <p>
  * 客户端的接收服务端响应的解码器
+ *
  * @Author LiuXiaolong
  * @Description lxl-rpc
  * @DateTime 2023/8/17  14:41
  **/
 @Slf4j
-public class RpcResponseDecoder extends LengthFieldBasedFrameDecoder {
-    public RpcResponseDecoder() {
-        super(1024 * 1024, MessageEncoderConstant.RESPONSE_LENGTH_FIELD_OFFSET, MessageEncoderConstant.LENGTH_FIELD_LENGTH);
-    }
+public class RpcResponseDecoder extends ByteToMessageDecoder {
+
+//    public RpcResponseDecoder() {
+//        super(1024 * 1024, MessageEncoderConstant.RESPONSE_LENGTH_FIELD_OFFSET, MessageEncoderConstant.LENGTH_FIELD_LENGTH);
+//    }
 
     @Override
-    protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         byte[] magic = new byte[MessageEncoderConstant.MAGIC_NUM.length];
         in.readBytes(magic);
         //魔术值校验
@@ -67,16 +72,16 @@ public class RpcResponseDecoder extends LengthFieldBasedFrameDecoder {
         in.readBytes(objectBytes);
         System.out.println("objectBytes.length = " + objectBytes.length);
         Object bodyObject = null;
-       if (objectBytes.length > 0){
-           //获取压缩器
-           Compressor compressor = CompressFactory.getCompressorByCode(compressType).getImplement();
-           //解压缩
-           objectBytes = compressor.decompress(objectBytes);
+        if (objectBytes.length > 0) {
+            //获取压缩器
+            Compressor compressor = CompressFactory.getCompressorByCode(compressType).getImplement();
+            //解压缩
+            objectBytes = compressor.decompress(objectBytes);
 
-           //反序列化
-           Serializer serializer = SerializerFactory.getSerializerByCode(serializeType).getImplement();
-           bodyObject = serializer.disSerializer(objectBytes,Object.class);
-       }
+            //反序列化
+            Serializer serializer = SerializerFactory.getSerializerByCode(serializeType).getImplement();
+            bodyObject = serializer.disSerializer(objectBytes, Object.class);
+        }
 
         //封装响应
         LxlRpcResponse response = LxlRpcResponse.builder().object(bodyObject)
@@ -87,10 +92,10 @@ public class RpcResponseDecoder extends LengthFieldBasedFrameDecoder {
                 .requestId(requestId)
                 .build();
 
-        if (log.isDebugEnabled()){
-            log.debug("响应【{}】，已经在客户端完成解码,并封装成了对应的响应实体类",requestId);
+        if (log.isDebugEnabled()) {
+            log.debug("响应【{}】，已经在客户端完成解码,并封装成了对应的响应实体类", requestId);
         }
-        return response;
+        ctx.fireChannelRead(response);
     }
 
 

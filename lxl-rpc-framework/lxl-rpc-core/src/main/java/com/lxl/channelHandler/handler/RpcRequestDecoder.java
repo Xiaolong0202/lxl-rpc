@@ -12,10 +12,12 @@ import com.lxl.transport.message.request.LxlRpcRequest;
 import com.lxl.transport.message.request.RequestPayload;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * lxl-rpc,服务端的解析报文的解码器
@@ -24,19 +26,22 @@ import java.util.Date;
  * @DateTime 2023/8/16  19:51
  **/
 @Slf4j
-public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
+public class RpcRequestDecoder extends ByteToMessageDecoder {
 
 
-    public RpcRequestDecoder( ) {
-        super(1024*1024, MessageEncoderConstant.REQUEST_LENGTH_FIELD_OFFSET, MessageEncoderConstant.LENGTH_FIELD_LENGTH);
-    }
+//    public RpcRequestDecoder( ) {
+//        //定义最长度，并且定位到该协议当中的长度字段，确定该帧的字节长度
+////        super(1024*1024, MessageEncoderConstant.REQUEST_LENGTH_FIELD_OFFSET, MessageEncoderConstant.LENGTH_FIELD_LENGTH);
+//        super(1024*1024, 1, 1);
+//    }
 
     @Override
-    protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
-            return decodeFrame(in);
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+        LxlRpcRequest request =  decodeFrame(in);
+        ctx.fireChannelRead(request);
     }
 
-    private Object decodeFrame(ByteBuf byteBuf) {
+    private LxlRpcRequest decodeFrame(ByteBuf byteBuf) {
         //1.解析魔数值
         byte[] magic = new byte[MessageEncoderConstant.MAGIC_NUM.length];
         byteBuf.readBytes(magic);
@@ -99,6 +104,5 @@ public class RpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         }
         return request;
     }
-
 
 }
