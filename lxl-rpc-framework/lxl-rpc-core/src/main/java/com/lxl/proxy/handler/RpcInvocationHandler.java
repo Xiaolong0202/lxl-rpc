@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 该类封装了客户端通信的基础
  * 1.发现服务 2.建立连接 3.发送请求 4.获取服务调用的结果
+ *
  * @author 13430
  */
 @Slf4j
@@ -76,6 +77,7 @@ public class RpcInvocationHandler implements InvocationHandler {
             intervalTime = reTryAnnotation.intervalTime();
         }
         CircuitBreaker circuitBreaker = null;
+        int definedTimes = tryTimes;
 
         while (true) {
 
@@ -161,7 +163,7 @@ public class RpcInvocationHandler implements InvocationHandler {
                 }
                 tryTimes--;
                 if (tryTimes < 0) {
-                    log.error("对方法【{}】进行远程调用的时候，重试【{}】次，任然不可调用，放弃调用 ", method.getName(), reTryAnnotation.tryTimes() - tryTimes, exception);
+                    log.error("对方法【{}】进行远程调用的时候，重试【{}】次，任然不可调用，放弃调用 ", method.getName(), definedTimes - tryTimes, exception);
                     break;
                 }
                 TimeUnit.MILLISECONDS.sleep(intervalTime);
@@ -204,7 +206,6 @@ public class RpcInvocationHandler implements InvocationHandler {
         if (channel == null) throw new NetWorkException("Netty获取channel对象实例失败");
         return channel;
     }
-
 
 
 }
