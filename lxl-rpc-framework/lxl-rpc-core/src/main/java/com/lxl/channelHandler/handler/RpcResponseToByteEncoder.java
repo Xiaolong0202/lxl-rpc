@@ -15,17 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 报文格式
- *
- * 魔数 6
- * 版本 1
- * 首部长度 2
- * 报文总长度 8
- * 序列化类型 1
- * 压缩类型 1
- * 响应码 1
- * 请求id 8
- * 时间戳 8
- *
  * 服务端的响应编码器
  *
  * @Author LiuXiaolong

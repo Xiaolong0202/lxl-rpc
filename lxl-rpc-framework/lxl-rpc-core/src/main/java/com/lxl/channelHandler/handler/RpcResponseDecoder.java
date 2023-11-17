@@ -23,9 +23,10 @@ import java.util.List;
  * 总长度 8
  * 序列化类型 1
  * 压缩方式 1
+ * 时间戳 8
  * 响应码  1
  * 请求的id 8
- * 请求体 未知
+ * 响应体 可变长度
  * <p>
  * 客户端的接收服务端响应的解码器
  *
@@ -67,7 +68,7 @@ public class RpcResponseDecoder extends ByteToMessageDecoder {
         byte responseCode = in.readByte();
         //请求的id
         long requestId = in.readLong();
-        //请求体
+        //响应
         byte[] objectBytes = new byte[(int) (fullLen - headLen)];
         in.readBytes(objectBytes);
         log.debug("获取的响应当中ByteBuf的长度为【{}】,通过解析报文得出的fullLength为【{}】",in.capacity(),fullLen);

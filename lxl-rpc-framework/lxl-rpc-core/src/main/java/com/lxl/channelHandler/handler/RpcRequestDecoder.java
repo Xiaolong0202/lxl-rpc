@@ -20,6 +20,17 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * 请求报文格式
+ * 魔术值 6
+ * 版本号 1
+ * 头部长度 2
+ * 总长度 8
+ * 序列化类型 1
+ * 压缩方式 1
+ * 请求类型 1
+ * 请求id 8
+ * 时间戳 8
+ * 请求体 可变长度,若请求类型为心跳检测则没有请求体
  * lxl-rpc,服务端的解析报文的解码器
  * @Author LiuXiaolong
  * @Description lxl-rpc,服务端的解析报文的解码器
