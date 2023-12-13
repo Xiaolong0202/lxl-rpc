@@ -16,10 +16,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @Author LiuXiaolong
@@ -28,16 +26,31 @@ import java.util.concurrent.TimeoutException;
  **/
 @Slf4j
 public class HeartBeatDetector {
-
-    private static Thread heartDetectorThread;
+    //心跳的调度线程
+    private volatile static Thread heartDetectorScheduledThread;
+    //使用线程池当中的线程进行心跳处理，可以避免出现异常导致调度线程的停止
+    private static final ThreadPoolExecutor HEART_BEAT_EXECUTOR = new ThreadPoolExecutor(
+            200,
+            500,
+            2, TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(200),
+            new ThreadFactory() {
+                private final AtomicInteger count = new AtomicInteger(0);
+                @Override
+                public Thread newThread(Runnable r) {
+                    return new Thread(r, "heartBeatThread-" + count.getAndIncrement());
+                }
+            },
+            new ThreadPoolExecutor.DiscardOldestPolicy());//拒绝策略，丢掉阻塞队列中最前面的线程，因为心跳不是强制的
 
     /**
      * 拉取服务列表并进行连接,对没有连接的服务使用Netty创建连接,
      * 如果没有开启心跳检测的话则开始心跳检测
      */
     public static void detectorHeartBeat(String serviceName) {
-
+        //从注册中心获取该服务的所有远程地址
         List<InetSocketAddress> inetSocketAddressList = LxlRpcBootStrap.getInstance().getConfiguration().getRegistryConfig().getRegistry().lookup(serviceName);
+        //与所有没有建立连接的地址开始建立连接
         inetSocketAddressList.forEach(inetSocketAddress -> {
             if (!LxlRpcBootStrap.CHANNEL_CACHE.containsKey(inetSocketAddress)) {
                 try {
@@ -48,18 +61,31 @@ public class HeartBeatDetector {
                 }
             }
         });
-        if (heartDetectorThread == null) {
-            heartDetectorThread = new Thread(() -> new Timer().schedule(new HeartBeatTask(), 0, 5000), "lxl-rpc-HeartBeatDetector-Thread");
-            heartDetectorThread.setDaemon(true);//设置为守护线程
-            heartDetectorThread.start();
+        //借鉴懒汉式单例的实现模式，保证只有一个心跳调度线程
+        if (heartDetectorScheduledThread == null) {
+            synchronized (HeartBeatDetector.class) {
+                if (heartDetectorScheduledThread == null) {
+                    heartDetectorScheduledThread = new Thread(() -> new Timer().schedule(new HeartBeatTask(), 0, 3500), "lxl-rpc-HeartBeatDetector-Thread");
+                    heartDetectorScheduledThread.setDaemon(true);//设置为守护线程
+                    heartDetectorScheduledThread.start();
+                }
+            }
         }
     }
 
+    /**
+     * 实现心跳的调度
+     */
     private static class HeartBeatTask extends TimerTask {
         @Override
         public void run() {
+            //打印TreeMap
+            log.info("---------------------------------TreeMap(由于有些响应时间相同，所以会覆盖掉部分inetSocketAddr)----------------------------------");
+            LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.forEach((responese, inetSocket) -> log.info("responeseTime[{}],inetSocketAddress[{}]", responese, inetSocket));
+
             LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.clear();//每次先将响应时间的排序树清空
-            LxlRpcBootStrap.CHANNEL_CACHE.forEach((inetSocketAddress, channel) -> {
+            //循环遍历所有的连接，并交给线程池去处理心跳请求
+            LxlRpcBootStrap.CHANNEL_CACHE.forEach((inetSocketAddress, channel) -> HEART_BEAT_EXECUTOR.execute(()->{
                 int tryTimes = 3;//请求异常重连
                 int totalTimes = tryTimes;
                 while (tryTimes-- > 0) {
@@ -105,11 +131,7 @@ public class HeartBeatDetector {
                         continue;
                     }
                 }
-            });
-
-            //打印TreeMap
-            log.info("---------------------------------TreeMap(由于有些响应时间相同，所以会覆盖掉部分inetSocketAddr)----------------------------------");
-            LxlRpcBootStrap.RESPONSE_TIME_CHANNEL_CACHE.forEach((responese, inetSocket) -> log.info("responeseTime[{}],inetSocketAddress[{}]", responese, inetSocket));
+            }));
         }
     }
 }
