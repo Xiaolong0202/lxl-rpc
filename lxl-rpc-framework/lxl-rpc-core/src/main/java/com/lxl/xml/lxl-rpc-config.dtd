@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+            <!--
+声明语法
+<!ELEMENT element-name EMPTY>
+表示元素的内容为空，不包含子元素或者文本
+
+包含任意内容的元素
+声明语法
+<!ELEMENT element-name ANY>
+表示元素中可以包含任何内容（没有具体的限制）
+
+只包含文本内容的元素
+声明语法
+<!ELEMENT element-name (#PCDATA)>
+表示元素中只包含文本内容，不能包含子元素，也可以是空标记
+            -->
+
+
+        <!ELEMENT port (#PCDATA)>
+        <!ELEMENT appName (#PCDATA)>
+        <!ELEMENT registry  EMPTY>
+        <!ATTLIST registry
+            url CDATA #REQUIRED>
+
+        <!ELEMENT serializeType EMPTY>
+        <!ATTLIST serializeType
+                type CDATA #REQUIRED>
+        <!ELEMENT serializer EMPTY>
+        <!ATTLIST serializer
+                code CDATA #REQUIRED
+                name CDATA #REQUIRED
+                class CDATA #REQUIRED>
+
+        <!ELEMENT compressType EMPTY>
+        <!ATTLIST compressType
+                type CDATA #REQUIRED>
+        <!ELEMENT compressor EMPTY>
+        <!ATTLIST compressor
+                code CDATA #REQUIRED
+                name CDATA #REQUIRED
+                class CDATA #REQUIRED>
+
+        <!ELEMENT loadBalancerType EMPTY>
+        <!ATTLIST loadBalancerType
+                type CDATA #REQUIRED>
+        <!ELEMENT loadBalancer EMPTY>
+        <!ATTLIST loadBalancer
+                class CDATA #REQUIRED>
+<!-- 配置属性列表-->
+
+
+        <!ELEMENT idGenerator EMPTY>
+        <!ATTLIST idGenerator
+            class CDATA #REQUIRED
+            dataCenterId CDATA #REQUIRED
+            machineId CDATA #REQUIRED>
+
+        <!ELEMENT configuration (port?, appName?,registry?
+                ,serializeType?,serializer?,compressType?,compressor?,loadBalancerType?,loadBalancer?
+                ,idGenerator?)>
+
